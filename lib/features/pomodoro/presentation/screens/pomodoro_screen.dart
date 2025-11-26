@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/glow_theme.dart';
+import '../../../../core/services/audio_service.dart';
 import '../bloc/pomodoro_bloc.dart';
 import '../bloc/pomodoro_event.dart';
 import '../bloc/pomodoro_state.dart';
 import '../widgets/virtual_knob.dart';
+import '../widgets/ambience_selector.dart';
+import '../widgets/volume_control.dart';
 
-/// Pomodoro screen
-class PomodoroScreen extends StatelessWidget {
+/// Pomodoro screen with audio integration
+class PomodoroScreen extends StatefulWidget {
   final NeonTheme theme;
 
   const PomodoroScreen({
@@ -16,55 +19,176 @@ class PomodoroScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<PomodoroScreen> createState() => _PomodoroScreenState();
+}
+
+class _PomodoroScreenState extends State<PomodoroScreen> {
+  final AudioService _audioService = AudioService();
+  Ambience _currentAmbience = Ambience.none;
+  bool _showVolumeControl = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioService.initialize();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => PomodoroBloc(),
-      child: BlocBuilder<PomodoroBloc, PomodoroState>(
-        builder: (context, state) {
-          final pomodoro = state.pomodoro;
+      child: BlocListener<PomodoroBloc, PomodoroState>(
+        listener: (context, state) {
+          // Play sound effects on state changes
+          final status = state.pomodoro.status;
+          if (status.toString().contains('running')) {
+            _audioService.playEffect(AudioEffect.timerStart);
+          } else if (status.toString().contains('completed')) {
+            _audioService.playEffect(AudioEffect.timerComplete);
+          }
+        },
+        child: BlocBuilder<PomodoroBloc, PomodoroState>(
+          builder: (context, state) {
+            final pomodoro = state.pomodoro;
 
-          return Scaffold(
-            backgroundColor: theme.backgroundColor,
-            body: SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Timer display
-                  _buildTimerDisplay(pomodoro.remainingMinutes,
-                      pomodoro.remainingSecondsDisplay),
+            return Scaffold(
+              backgroundColor: widget.theme.backgroundColor,
+              body: SafeArea(
+                child: Stack(
+                  children: [
+                    // Main content
+                    SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 20),
 
-                  const SizedBox(height: 60),
+                            // Timer display
+                            _buildTimerDisplay(pomodoro.remainingMinutes,
+                                pomodoro.remainingSecondsDisplay),
 
-                  // Virtual knob
-                  if (pomodoro.isIdle)
-                    VirtualKnob(
-                      initialValue: pomodoro.durationMinutes.toDouble(),
-                      minValue: 15,
-                      maxValue: 60,
-                      step: 5,
-                      knobColor: theme.primaryColor,
-                      size: 150,
-                      onChanged: (value) {
-                        context.read<PomodoroBloc>().add(
-                              ChangeDuration(value.toInt()),
-                            );
-                      },
+                            const SizedBox(height: 40),
+
+                            // Virtual knob
+                            if (pomodoro.isIdle)
+                              VirtualKnob(
+                                initialValue: pomodoro.durationMinutes.toDouble(),
+                                minValue: 15,
+                                maxValue: 60,
+                                step: 5,
+                                knobColor: widget.theme.primaryColor,
+                                size: 150,
+                                onChanged: (value) {
+                                  context.read<PomodoroBloc>().add(
+                                        ChangeDuration(value.toInt()),
+                                      );
+                                },
+                              ),
+
+                            const SizedBox(height: 40),
+
+                            // Control buttons
+                            _buildControlButtons(context, pomodoro.status),
+
+                            const SizedBox(height: 30),
+
+                            // Ambience selector
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: AmbienceSelector(
+                                currentAmbience: _currentAmbience,
+                                glowColor: widget.theme.glowColor,
+                                isPremiumUser: false, // TODO: Get from user settings
+                                onAmbienceChanged: (ambience) {
+                                  setState(() => _currentAmbience = ambience);
+                                },
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // Volume control toggle button
+                            _buildVolumeToggle(),
+
+                            // Volume control (expandable)
+                            if (_showVolumeControl) ...[
+                              const SizedBox(height: 20),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: VolumeControl(
+                                  glowColor: widget.theme.glowColor,
+                                  showEffectVolume: true,
+                                  showAmbienceVolume: true,
+                                ),
+                              ),
+                            ],
+
+                            const SizedBox(height: 20),
+
+                            // Completed sessions
+                            _buildSessionInfo(pomodoro.completedSessions),
+
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                      ),
                     ),
 
-                  const SizedBox(height: 60),
+                    // Compact volume control (top right)
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: CompactVolumeControl(
+                        glowColor: widget.theme.glowColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 
-                  // Control buttons
-                  _buildControlButtons(context, pomodoro.status),
-
-                  const SizedBox(height: 20),
-
-                  // Completed sessions
-                  _buildSessionInfo(pomodoro.completedSessions),
-                ],
+  Widget _buildVolumeToggle() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _showVolumeControl = !_showVolumeControl);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: widget.theme.glowColor.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _showVolumeControl ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              size: 16,
+              color: widget.theme.glowColor.withOpacity(0.7),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _showVolumeControl ? 'HIDE VOLUME' : 'SHOW VOLUME',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: widget.theme.glowColor.withOpacity(0.7),
+                letterSpacing: 1,
               ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -90,7 +214,7 @@ class PomodoroScreen extends StatelessWidget {
         color: Colors.white,
         shadows: [
           Shadow(
-            color: theme.glowColor.withOpacity(0.9),
+            color: widget.theme.glowColor.withOpacity(0.9),
             blurRadius: 10,
           ),
         ],
@@ -136,17 +260,17 @@ class PomodoroScreen extends StatelessWidget {
         width: 70,
         height: 70,
         decoration: BoxDecoration(
-          color: theme.primaryColor.withOpacity(0.2),
+          color: widget.theme.primaryColor.withOpacity(0.2),
           borderRadius: BorderRadius.circular(35),
           border: Border.all(
-            color: theme.primaryColor,
+            color: widget.theme.primaryColor,
             width: 2,
           ),
         ),
         child: Icon(
           icon,
           size: 32,
-          color: theme.primaryColor,
+          color: widget.theme.primaryColor,
         ),
       ),
     );
@@ -156,14 +280,14 @@ class PomodoroScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: theme.primaryColor.withOpacity(0.1),
+        color: widget.theme.primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         'Completed: $completed sessions',
         style: TextStyle(
           fontSize: 14,
-          color: theme.textColor,
+          color: widget.theme.textColor,
         ),
       ),
     );
