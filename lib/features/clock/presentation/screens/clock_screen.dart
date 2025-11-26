@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/themes/glow_theme.dart';
+import '../../../../core/services/burnin_protection_service.dart';
 import '../widgets/glow_clock.dart';
 
-/// Main clock screen
+/// Main clock screen with burn-in protection
 class ClockScreen extends StatefulWidget {
   final NeonTheme theme;
 
@@ -17,13 +18,31 @@ class ClockScreen extends StatefulWidget {
 }
 
 class _ClockScreenState extends State<ClockScreen> {
+  final BurninProtectionService _burninProtection = BurninProtectionService();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
+  double _offsetX = 0.0;
+  double _offsetY = 0.0;
 
   @override
   void initState() {
     super.initState();
     _startTimer();
+    _startBurninProtection();
+  }
+
+  void _startBurninProtection() {
+    _burninProtection.addOffsetListener(_onBurninOffsetChanged);
+    _burninProtection.start();
+  }
+
+  void _onBurninOffsetChanged(double x, double y) {
+    if (mounted) {
+      setState(() {
+        _offsetX = x;
+        _offsetY = y;
+      });
+    }
   }
 
   void _startTimer() {
@@ -39,6 +58,7 @@ class _ClockScreenState extends State<ClockScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _burninProtection.removeOffsetListener(_onBurninOffsetChanged);
     super.dispose();
   }
 
@@ -47,28 +67,31 @@ class _ClockScreenState extends State<ClockScreen> {
     return Scaffold(
       backgroundColor: widget.theme.backgroundColor,
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Date display
-            _buildDateDisplay(),
+        child: Transform.translate(
+          offset: Offset(_offsetX, _offsetY),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Date display
+              _buildDateDisplay(),
 
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            // Main clock
-            GlowClock(
-              time: _currentTime,
-              glowColor: widget.theme.glowColor,
-              show24Hour: true,
-              showSeconds: true,
-              digitSize: 80,
-            ),
+              // Main clock
+              GlowClock(
+                time: _currentTime,
+                glowColor: widget.theme.glowColor,
+                show24Hour: true,
+                showSeconds: true,
+                digitSize: 80,
+              ),
 
-            const SizedBox(height: 40),
+              const SizedBox(height: 40),
 
-            // Theme indicator
-            _buildThemeIndicator(),
-          ],
+              // Theme indicator
+              _buildThemeIndicator(),
+            ],
+          ),
         ),
       ),
     );
