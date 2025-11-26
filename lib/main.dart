@@ -94,6 +94,14 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLandscape = size.width > size.height;
+
+    // Responsive positioning
+    final indicatorTop = isLandscape ? 10.0 : 60.0;
+    final hintBottom = isLandscape ? 10.0 : 40.0;
+    final hintFontSize = isLandscape ? 9.0 : 11.0;
+
     return GestureDetector(
       onDoubleTap: _switchTheme,
       child: AnimatedContainer(
@@ -117,45 +125,45 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
 
-              // Page indicator
+              // Page indicator - with SafeArea to avoid notch
               Positioned(
-                top: 60,
+                top: indicatorTop,
                 left: 0,
                 right: 0,
-                child: Center(
-                  child: _buildPageIndicator(),
+                child: SafeArea(
+                  child: Center(
+                    child: _buildPageIndicator(isLandscape: isLandscape),
+                  ),
                 ),
               ),
 
               // Navigation hint
               Positioned(
-                bottom: 40,
+                bottom: hintBottom,
                 left: 0,
                 right: 0,
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _currentPage == 0
-                              ? 'Swipe left for Timer  •  Double tap to switch theme'
-                              : 'Swipe right for Clock  •  Double tap to switch theme',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: _currentTheme.textColor.withOpacity(0.6),
-                          ),
-                        ),
+                child: SafeArea(
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isLandscape ? 12 : 16,
+                        vertical: isLandscape ? 6 : 8,
                       ),
-                    ],
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _currentPage == 0
+                            ? 'Swipe left for Timer  •  Double tap to switch theme'
+                            : 'Swipe right for Clock  •  Double tap to switch theme',
+                        style: TextStyle(
+                          fontSize: hintFontSize,
+                          color: _currentTheme.textColor.withOpacity(0.6),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -166,9 +174,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildPageIndicator() {
+  Widget _buildPageIndicator({bool isLandscape = false}) {
+    final padding = isLandscape ? 8.0 : 12.0;
+    final spacing = isLandscape ? 8.0 : 12.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding * 0.67),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(20),
@@ -180,16 +191,20 @@ class _MainScreenState extends State<MainScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildIndicatorDot(0, 'CLOCK'),
-          const SizedBox(width: 12),
-          _buildIndicatorDot(1, 'TIMER'),
+          _buildIndicatorDot(0, 'CLOCK', isLandscape: isLandscape),
+          SizedBox(width: spacing),
+          _buildIndicatorDot(1, 'TIMER', isLandscape: isLandscape),
         ],
       ),
     );
   }
 
-  Widget _buildIndicatorDot(int index, String label) {
+  Widget _buildIndicatorDot(int index, String label, {bool isLandscape = false}) {
     final isActive = _currentPage == index;
+    final fontSize = isLandscape ? 8.0 : 10.0;
+    final horizontalPadding = isLandscape ? 8.0 : 12.0;
+    final verticalPadding = isLandscape ? 3.0 : 4.0;
+
     return GestureDetector(
       onTap: () {
         _pageController.animateToPage(
@@ -200,7 +215,10 @@ class _MainScreenState extends State<MainScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+          vertical: verticalPadding,
+        ),
         decoration: BoxDecoration(
           color: isActive
               ? _currentTheme.glowColor.withOpacity(0.2)
@@ -216,7 +234,7 @@ class _MainScreenState extends State<MainScreen> {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 10,
+            fontSize: fontSize,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             color: isActive
                 ? _currentTheme.glowColor

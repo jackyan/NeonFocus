@@ -35,6 +35,16 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLandscape = size.width > size.height;
+
+    // Responsive sizing
+    final topPadding = isLandscape ? 80.0 : 70.0; // Extra space for page indicator
+    final timerFontSize = isLandscape ? 60.0 : 80.0;
+    final knobSize = isLandscape ? 120.0 : 150.0;
+    final verticalSpacing = isLandscape ? 20.0 : 40.0;
+    final compactControlTop = isLandscape ? 10.0 : 10.0;
+
     return BlocProvider(
       create: (context) => PomodoroBloc(),
       child: BlocListener<PomodoroBloc, PomodoroState>(
@@ -58,90 +68,90 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
                   children: [
                     // Main content
                     SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 20),
+                      padding: EdgeInsets.only(
+                        top: topPadding,
+                        bottom: 20,
+                        left: 20,
+                        right: 20,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Timer display
+                          _buildTimerDisplay(
+                            pomodoro.remainingMinutes,
+                            pomodoro.remainingSecondsDisplay,
+                            fontSize: timerFontSize,
+                          ),
 
-                            // Timer display
-                            _buildTimerDisplay(pomodoro.remainingMinutes,
-                                pomodoro.remainingSecondsDisplay),
+                          SizedBox(height: verticalSpacing),
 
-                            const SizedBox(height: 40),
-
-                            // Virtual knob
-                            if (pomodoro.isIdle)
-                              VirtualKnob(
-                                initialValue: pomodoro.durationMinutes.toDouble(),
-                                minValue: 15,
-                                maxValue: 60,
-                                step: 5,
-                                knobColor: widget.theme.primaryColor,
-                                size: 150,
-                                onChanged: (value) {
-                                  context.read<PomodoroBloc>().add(
-                                        ChangeDuration(value.toInt()),
-                                      );
-                                },
-                              ),
-
-                            const SizedBox(height: 40),
-
-                            // Control buttons
-                            _buildControlButtons(context, pomodoro.status),
-
-                            const SizedBox(height: 30),
-
-                            // Ambience selector
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
-                              child: AmbienceSelector(
-                                currentAmbience: _currentAmbience,
-                                glowColor: widget.theme.glowColor,
-                                isPremiumUser: false, // TODO: Get from user settings
-                                onAmbienceChanged: (ambience) {
-                                  setState(() => _currentAmbience = ambience);
-                                },
-                              ),
+                          // Virtual knob
+                          if (pomodoro.isIdle)
+                            VirtualKnob(
+                              initialValue: pomodoro.durationMinutes.toDouble(),
+                              minValue: 15,
+                              maxValue: 60,
+                              step: 5,
+                              knobColor: widget.theme.primaryColor,
+                              size: knobSize,
+                              onChanged: (value) {
+                                context.read<PomodoroBloc>().add(
+                                      ChangeDuration(value.toInt()),
+                                    );
+                              },
                             ),
 
+                          SizedBox(height: verticalSpacing),
+
+                          // Control buttons
+                          _buildControlButtons(context, pomodoro.status),
+
+                          SizedBox(height: isLandscape ? 20 : 30),
+
+                          // Ambience selector
+                          AmbienceSelector(
+                            currentAmbience: _currentAmbience,
+                            glowColor: widget.theme.glowColor,
+                            isPremiumUser: false, // TODO: Get from user settings
+                            onAmbienceChanged: (ambience) {
+                              setState(() => _currentAmbience = ambience);
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Volume control toggle button
+                          _buildVolumeToggle(),
+
+                          // Volume control (expandable)
+                          if (_showVolumeControl) ...[
                             const SizedBox(height: 20),
-
-                            // Volume control toggle button
-                            _buildVolumeToggle(),
-
-                            // Volume control (expandable)
-                            if (_showVolumeControl) ...[
-                              const SizedBox(height: 20),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                child: VolumeControl(
-                                  glowColor: widget.theme.glowColor,
-                                  showEffectVolume: true,
-                                  showAmbienceVolume: true,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: 20),
-
-                            // Completed sessions
-                            _buildSessionInfo(pomodoro.completedSessions),
-
-                            const SizedBox(height: 20),
+                            VolumeControl(
+                              glowColor: widget.theme.glowColor,
+                              showEffectVolume: true,
+                              showAmbienceVolume: true,
+                            ),
                           ],
-                        ),
+
+                          const SizedBox(height: 20),
+
+                          // Completed sessions
+                          _buildSessionInfo(pomodoro.completedSessions),
+
+                          const SizedBox(height: 20),
+                        ],
                       ),
                     ),
 
-                    // Compact volume control (top right)
+                    // Compact volume control (top right) - positioned below page indicator
                     Positioned(
-                      top: 10,
+                      top: compactControlTop,
                       right: 10,
-                      child: CompactVolumeControl(
-                        glowColor: widget.theme.glowColor,
+                      child: SafeArea(
+                        child: CompactVolumeControl(
+                          glowColor: widget.theme.glowColor,
+                        ),
                       ),
                     ),
                   ],
@@ -193,22 +203,22 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     );
   }
 
-  Widget _buildTimerDisplay(int minutes, int seconds) {
+  Widget _buildTimerDisplay(int minutes, int seconds, {double fontSize = 80.0}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildTimeText(minutes.toString().padLeft(2, '0')),
-        _buildTimeText(':'),
-        _buildTimeText(seconds.toString().padLeft(2, '0')),
+        _buildTimeText(minutes.toString().padLeft(2, '0'), fontSize: fontSize),
+        _buildTimeText(':', fontSize: fontSize),
+        _buildTimeText(seconds.toString().padLeft(2, '0'), fontSize: fontSize),
       ],
     );
   }
 
-  Widget _buildTimeText(String text) {
+  Widget _buildTimeText(String text, {double fontSize = 80.0}) {
     return Text(
       text,
       style: TextStyle(
-        fontSize: 80,
+        fontSize: fontSize,
         fontFamily: 'Orbitron',
         fontWeight: FontWeight.bold,
         color: Colors.white,
