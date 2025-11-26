@@ -64,40 +64,62 @@ class _ClockScreenState extends State<ClockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isLandscape = size.width > size.height;
+
+    // Responsive sizing based on orientation
+    final dateSize = isLandscape ? 14.0 : 18.0;
+    final clockSize = isLandscape ? 60.0 : 80.0;
+    final verticalSpacing = isLandscape ? 20.0 : 40.0;
+    final topPadding = isLandscape ? 80.0 : 20.0; // Extra padding for page indicator
+
     return Scaffold(
       backgroundColor: widget.theme.backgroundColor,
       body: SafeArea(
         child: Transform.translate(
           offset: Offset(_offsetX, _offsetY),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Date display
-              _buildDateDisplay(),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: topPadding,
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Date display
+                    _buildDateDisplay(fontSize: dateSize),
 
-              const SizedBox(height: 40),
+                    SizedBox(height: verticalSpacing),
 
-              // Main clock
-              GlowClock(
-                time: _currentTime,
-                glowColor: widget.theme.glowColor,
-                show24Hour: true,
-                showSeconds: true,
-                digitSize: 80,
+                    // Main clock
+                    GlowClock(
+                      time: _currentTime,
+                      glowColor: widget.theme.glowColor,
+                      show24Hour: true,
+                      showSeconds: true,
+                      digitSize: clockSize,
+                    ),
+
+                    SizedBox(height: verticalSpacing),
+
+                    // Theme indicator
+                    _buildThemeIndicator(),
+                  ],
+                ),
               ),
-
-              const SizedBox(height: 40),
-
-              // Theme indicator
-              _buildThemeIndicator(),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildDateDisplay() {
+  Widget _buildDateDisplay({double fontSize = 18.0}) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final months = [
       'Jan',
@@ -121,8 +143,9 @@ class _ClockScreenState extends State<ClockScreen> {
 
     return Text(
       '$weekday, $month $day, $year',
+      textAlign: TextAlign.center,
       style: TextStyle(
-        fontSize: 18,
+        fontSize: fontSize,
         color: widget.theme.textColor.withOpacity(0.8),
         fontWeight: FontWeight.w300,
         letterSpacing: 2,
