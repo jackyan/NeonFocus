@@ -23,23 +23,27 @@ class GlowClock extends StatelessWidget {
     final hour =
         show24Hour ? time.hour : (time.hour % 12 == 0 ? 12 : time.hour % 12);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Hour
-        _buildTimeUnit(hour),
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Hour
+          _buildTimeUnit(hour),
 
-        _buildSeparator(),
-
-        // Minute
-        _buildTimeUnit(time.minute),
-
-        if (showSeconds) ...[
           _buildSeparator(),
-          // Second
-          _buildTimeUnit(time.second),
+
+          // Minute
+          _buildTimeUnit(time.minute),
+
+          if (showSeconds) ...[
+            _buildSeparator(),
+            // Second
+            _buildTimeUnit(time.second),
+          ],
         ],
-      ],
+      ),
     );
   }
 
