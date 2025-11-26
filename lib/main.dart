@@ -9,19 +9,22 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Set system UI overlay style
+  // Use semi-transparent status bar on Android to avoid content overlap
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
+    SystemUiOverlayStyle(
+      statusBarColor: Colors.black.withOpacity(0.3), // Semi-transparent instead of fully transparent
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.black,
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
 
-  // Set preferred orientations
+  // Set preferred orientations (support both portrait and landscape)
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
   ]);
 
   runApp(const NeonFocusApp());
