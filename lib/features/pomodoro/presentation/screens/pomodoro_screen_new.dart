@@ -131,26 +131,33 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   }
 
   Widget _buildTimeDigit(String text, double fontSize) {
-    return SizedBox(
-      width: fontSize * 1.45, // Optimized width for Orbitron bold + shadow without overflow
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontFamily: 'Orbitron',
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          decoration: TextDecoration.none, // Ensure no underline
-          fontFeatures: const [FontFeature.tabularFigures()], // Equal width for all digits
-          shadows: [
-            Shadow(
-              color: widget.theme.glowColor.withOpacity(0.9),
-              blurRadius: 20,
-            ),
-          ],
+    // Split the two-digit text into individual characters
+    // Each character gets its own fixed-width container
+    // This ensures all digit pairs have identical total width regardless of which digits appear
+    final chars = text.split('');
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: chars.map((char) => SizedBox(
+        width: fontSize * 0.75, // Fixed width per single digit
+        child: Text(
+          char,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: fontSize,
+            fontFamily: 'Orbitron',
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            decoration: TextDecoration.none,
+            fontFeatures: const [FontFeature.tabularFigures()],
+            shadows: [
+              Shadow(
+                color: widget.theme.glowColor.withOpacity(0.9),
+                blurRadius: 20,
+              ),
+            ],
+          ),
         ),
-      ),
+      )).toList(),
     );
   }
 
