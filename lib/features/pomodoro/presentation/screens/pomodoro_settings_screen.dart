@@ -185,80 +185,101 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
   }
 
   Widget _buildThemeSelector() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: NeonTheme.allThemes.map((theme) {
-        final isSelected = theme.id == _selectedTheme.id;
-        return GestureDetector(
-          onTap: () {
-            setState(() => _selectedTheme = theme);
-            widget.onThemeChanged(theme);
-          },
-          child: Container(
-            width: 90,
-            height: 50,
-            decoration: BoxDecoration(
-              color: theme.backgroundColor,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isSelected
-                    ? theme.glowColor
-                    : theme.glowColor.withOpacity(0.3),
-                width: isSelected ? 3 : 1,
+    return SizedBox(
+      height: 50,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: NeonTheme.allThemes.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final theme = NeonTheme.allThemes[index];
+          final isSelected = theme.id == _selectedTheme.id;
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedTheme = theme);
+              widget.onThemeChanged(theme);
+            },
+            child: Container(
+              width: 90,
+              height: 50,
+              decoration: BoxDecoration(
+                color: theme.backgroundColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected
+                      ? theme.glowColor
+                      : theme.glowColor.withOpacity(0.3),
+                  width: isSelected ? 3 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: theme.glowColor.withOpacity(0.5),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : null,
               ),
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: theme.glowColor.withOpacity(0.5),
-                        blurRadius: 12,
-                        spreadRadius: 2,
+              child: Center(
+                // Miniature clock preview (landscape mode: 09:35:26) - same as CLOCK settings
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '09',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Orbitron',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: theme.glowColor.withOpacity(0.9),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
-                    ]
-                  : null,
-            ),
-            child: Center(
-              // Miniature timer preview (landscape mode with M:S)
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '25',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Orbitron',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          color: theme.glowColor.withOpacity(0.9),
-                          blurRadius: 8,
-                        ),
-                      ],
                     ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '00',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Orbitron',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          color: theme.glowColor.withOpacity(0.9),
-                          blurRadius: 8,
-                        ),
-                      ],
+                    const SizedBox(width: 3),
+                    Text(
+                      '35',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Orbitron',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: theme.glowColor.withOpacity(0.9),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 3),
+                    Text(
+                      '26',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'Orbitron',
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: theme.glowColor.withOpacity(0.9),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        },
+      ),
     );
   }
 }
