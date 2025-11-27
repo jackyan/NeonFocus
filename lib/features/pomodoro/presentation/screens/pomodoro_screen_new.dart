@@ -124,7 +124,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(minutes.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 20),
+        const SizedBox(width: 36),
         _buildTimeDigit(seconds.toString().padLeft(2, '0'), fontSize),
       ],
     );
