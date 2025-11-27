@@ -95,9 +95,12 @@ class _ClockScreenState extends State<ClockScreen> {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
 
-    // 2x font sizes (+2 for better visibility)
-    final hourFontSize = isLandscape ? 122.0 : 162.0;
-    final infoFontSize = 14.0; // System default size
+    // Responsive font sizes based on screen dimensions
+    // Landscape: 15% of screen width, Portrait: 22% of screen width
+    final hourFontSize = isLandscape
+        ? size.width * 0.15
+        : size.width * 0.22;
+    final infoFontSize = size.width * 0.035; // ~3.5% of screen width
 
     return GestureDetector(
       onTap: _showSettings,
@@ -148,9 +151,9 @@ class _ClockScreenState extends State<ClockScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(_currentTime.hour.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(height: 10),
+        SizedBox(height: fontSize * 0.08),
         _buildTimeDigit(_currentTime.minute.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(height: 10),
+        SizedBox(height: fontSize * 0.08),
         _buildTimeDigit(_currentTime.second.toString().padLeft(2, '0'), fontSize),
       ],
     );
@@ -161,9 +164,9 @@ class _ClockScreenState extends State<ClockScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(_currentTime.hour.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 36),
+        SizedBox(width: fontSize * 0.3),
         _buildTimeDigit(_currentTime.minute.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 36),
+        SizedBox(width: fontSize * 0.3),
         _buildTimeDigit(_currentTime.second.toString().padLeft(2, '0'), fontSize),
       ],
     );
