@@ -96,11 +96,11 @@ class _ClockScreenState extends State<ClockScreen> {
     final isLandscape = size.width > size.height;
 
     // Responsive font sizes based on screen dimensions
-    // Landscape: 15% of screen width, Portrait: 22% of screen width
+    // Landscape: 15% of screen width, Portrait: 38% of screen width
     final hourFontSize = isLandscape
         ? size.width * 0.15
-        : size.width * 0.22;
-    final infoFontSize = size.width * 0.035; // ~3.5% of screen width
+        : size.width * 0.38;
+    final infoFontSize = size.width * 0.0245; // ~2.45% of screen width (reduced by 30%)
 
     return GestureDetector(
       onTap: _showSettings,

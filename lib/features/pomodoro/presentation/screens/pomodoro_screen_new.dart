@@ -60,10 +60,10 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     final isLandscape = size.width > size.height;
 
     // Responsive font sizes based on screen dimensions
-    // Landscape: 15% of screen width, Portrait: 22% of screen width
+    // Landscape: 15% of screen width, Portrait: 38% of screen width
     final timerFontSize = isLandscape
         ? size.width * 0.15
-        : size.width * 0.22;
+        : size.width * 0.38;
     final iconSize = timerFontSize / 8; // 1/8 of timer font
 
     return BlocProvider(
