@@ -58,8 +58,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
 
-    // 2x font sizes
-    final timerFontSize = isLandscape ? 120.0 : 160.0;
+    // 2x font sizes (+2 for better visibility)
+    final timerFontSize = isLandscape ? 122.0 : 162.0;
     final iconSize = timerFontSize / 8; // 1/8 of timer font
 
     return BlocProvider(
@@ -137,6 +137,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         fontFamily: 'Orbitron',
         fontWeight: FontWeight.bold,
         color: Colors.white,
+        decoration: TextDecoration.none, // Ensure no underline
         shadows: [
           Shadow(
             color: widget.theme.glowColor.withOpacity(0.9),
