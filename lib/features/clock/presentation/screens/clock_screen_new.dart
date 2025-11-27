@@ -198,7 +198,7 @@ class _ClockScreenState extends State<ClockScreen> {
             ),
           ),
         ),
-        SizedBox(width: fontSize * 0.06), // Consistent spacing between digits
+        SizedBox(width: fontSize * 0.08), // Increased spacing to prevent digit contact (especially "4")
         SizedBox(
           width: fontSize * 0.72, // Fixed width per single digit
           child: Text(
