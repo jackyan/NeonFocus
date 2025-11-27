@@ -161,9 +161,9 @@ class _ClockScreenState extends State<ClockScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(_currentTime.hour.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 20),
+        const SizedBox(width: 36),
         _buildTimeDigit(_currentTime.minute.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 20),
+        const SizedBox(width: 36),
         _buildTimeDigit(_currentTime.second.toString().padLeft(2, '0'), fontSize),
       ],
     );
