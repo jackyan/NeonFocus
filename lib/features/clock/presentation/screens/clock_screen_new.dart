@@ -171,7 +171,7 @@ class _ClockScreenState extends State<ClockScreen> {
 
   Widget _buildTimeDigit(String text, double fontSize) {
     return SizedBox(
-      width: fontSize * 1.6, // Fixed width increased to accommodate all digit pairs with shadows
+      width: fontSize * 1.45, // Optimized width for Orbitron bold + shadow without overflow
       child: Text(
         text,
         textAlign: TextAlign.center,
