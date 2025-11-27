@@ -59,8 +59,11 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
 
-    // 2x font sizes (+2 for better visibility)
-    final timerFontSize = isLandscape ? 122.0 : 162.0;
+    // Responsive font sizes based on screen dimensions
+    // Landscape: 15% of screen width, Portrait: 22% of screen width
+    final timerFontSize = isLandscape
+        ? size.width * 0.15
+        : size.width * 0.22;
     final iconSize = timerFontSize / 8; // 1/8 of timer font
 
     return BlocProvider(
@@ -113,7 +116,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(minutes.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(height: 10),
+        SizedBox(height: fontSize * 0.08),
         _buildTimeDigit(seconds.toString().padLeft(2, '0'), fontSize),
       ],
     );
@@ -124,7 +127,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(minutes.toString().padLeft(2, '0'), fontSize),
-        const SizedBox(width: 36),
+        SizedBox(width: fontSize * 0.3),
         _buildTimeDigit(seconds.toString().padLeft(2, '0'), fontSize),
       ],
     );
