@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/themes/glow_theme.dart';
@@ -177,6 +178,7 @@ class _ClockScreenState extends State<ClockScreen> {
         fontWeight: FontWeight.bold,
         color: Colors.white,
         decoration: TextDecoration.none, // Ensure no underline
+        fontFeatures: const [FontFeature.tabularFigures()], // Equal width for all digits
         shadows: [
           Shadow(
             color: widget.theme.glowColor.withOpacity(0.9),
@@ -222,12 +224,15 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildBatteryDisplay({double fontSize = 14.0}) {
-    // Use horizontal battery icon (landscape orientation), no percentage text
+    // Rotate battery icon 90 degrees to landscape orientation, no percentage text
     // In real app, use battery_plus package to get actual battery level
-    return Icon(
-      Icons.battery_full, // Horizontal battery icon in landscape orientation
-      size: fontSize + 6,
-      color: widget.theme.textColor.withOpacity(0.7),
+    return Transform.rotate(
+      angle: 1.5708, // 90 degrees in radians (π/2)
+      child: Icon(
+        Icons.battery_full, // Battery icon rotated to landscape orientation
+        size: fontSize + 6,
+        color: widget.theme.textColor.withOpacity(0.7),
+      ),
     );
   }
 }

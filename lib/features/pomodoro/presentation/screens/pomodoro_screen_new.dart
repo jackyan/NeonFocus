@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -138,6 +139,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         fontWeight: FontWeight.bold,
         color: Colors.white,
         decoration: TextDecoration.none, // Ensure no underline
+        fontFeatures: const [FontFeature.tabularFigures()], // Equal width for all digits
         shadows: [
           Shadow(
             color: widget.theme.glowColor.withOpacity(0.9),

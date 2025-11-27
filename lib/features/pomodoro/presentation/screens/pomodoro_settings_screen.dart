@@ -151,15 +151,15 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
               fontWeight: FontWeight.w300,
             ),
           ),
-          // Custom slim switch (elegant: longer and thinner)
+          // Custom slim switch (elegant: 2/3 thickness)
           GestureDetector(
             onTap: () => onChanged(!value),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 54,
-              height: 24,
+              height: 16,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 color: value
                     ? Colors.green.withOpacity(0.8)
                     : Colors.grey.withOpacity(0.5),
@@ -168,8 +168,8 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                 duration: const Duration(milliseconds: 200),
                 alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  width: 20,
-                  height: 20,
+                  width: 12,
+                  height: 12,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -196,11 +196,11 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
             widget.onThemeChanged(theme);
           },
           child: Container(
-            width: 70,
-            height: 70,
+            width: 90,
+            height: 50,
             decoration: BoxDecoration(
               color: theme.backgroundColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isSelected
                     ? theme.glowColor
@@ -218,7 +218,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                   : null,
             ),
             child: Center(
-              // Miniature timer preview (landscape mode)
+              // Miniature timer preview (landscape mode with M:S)
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -237,7 +237,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 6),
                   Text(
                     '00',
                     style: TextStyle(
