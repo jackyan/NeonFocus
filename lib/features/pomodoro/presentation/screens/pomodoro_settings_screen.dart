@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/themes/glow_theme.dart';
 
-/// Pomodoro settings bottom sheet (covers half screen)
-class PomodoroSettingsScreen extends StatelessWidget {
+/// Pomodoro settings bottom sheet (covers half screen) - with state management
+class PomodoroSettingsScreen extends StatefulWidget {
   final NeonTheme currentTheme;
   final bool autoStart;
   final bool vibration;
@@ -21,6 +21,23 @@ class PomodoroSettingsScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<PomodoroSettingsScreen> createState() => _PomodoroSettingsScreenState();
+}
+
+class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
+  late bool _autoStart;
+  late bool _vibration;
+  late NeonTheme _selectedTheme;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoStart = widget.autoStart;
+    _vibration = widget.vibration;
+    _selectedTheme = widget.currentTheme;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -28,9 +45,9 @@ class PomodoroSettingsScreen extends StatelessWidget {
       height: screenHeight * 0.5, // Half screen
       decoration: BoxDecoration(
         color: const Color(0xFF0A0E27),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.circular(20), // All corners rounded
         border: Border.all(
-          color: currentTheme.glowColor.withOpacity(0.3),
+          color: widget.currentTheme.glowColor.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -60,34 +77,40 @@ class PomodoroSettingsScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: currentTheme.glowColor,
+                      color: widget.currentTheme.glowColor,
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 30),
 
                   // Pomodoro Section
-                  _buildSectionTitle('POMODORO', currentTheme),
+                  _buildSectionTitle('POMODORO', widget.currentTheme),
                   const SizedBox(height: 15),
                   _buildToggleItem(
                     'Auto Start',
-                    autoStart,
-                    onAutoStartToggle,
-                    currentTheme,
+                    _autoStart,
+                    (value) {
+                      setState(() => _autoStart = value);
+                      widget.onAutoStartToggle(value);
+                    },
+                    widget.currentTheme,
                   ),
                   _buildToggleItem(
                     'Vibration Alert',
-                    vibration,
-                    onVibrationToggle,
-                    currentTheme,
+                    _vibration,
+                    (value) {
+                      setState(() => _vibration = value);
+                      widget.onVibrationToggle(value);
+                    },
+                    widget.currentTheme,
                   ),
 
                   const SizedBox(height: 30),
 
                   // Theme Section
-                  _buildSectionTitle('THEME', currentTheme),
+                  _buildSectionTitle('THEME', widget.currentTheme),
                   const SizedBox(height: 15),
-                  _buildThemeSelector(currentTheme),
+                  _buildThemeSelector(),
                 ],
               ),
             ),
@@ -128,28 +151,53 @@ class PomodoroSettingsScreen extends StatelessWidget {
               fontWeight: FontWeight.w300,
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: theme.primaryColor,
-            activeTrackColor: theme.primaryColor.withOpacity(0.5),
+          // Custom slim switch
+          GestureDetector(
+            onTap: () => onChanged(!value),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 48,
+              height: 26,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(13),
+                color: value
+                    ? Colors.green.withOpacity(0.8)
+                    : Colors.grey.withOpacity(0.5),
+              ),
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 200),
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildThemeSelector(NeonTheme currentTheme) {
+  Widget _buildThemeSelector() {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: NeonTheme.allThemes.map((theme) {
-        final isSelected = theme.id == currentTheme.id;
+        final isSelected = theme.id == _selectedTheme.id;
         return GestureDetector(
-          onTap: () => onThemeChanged(theme),
+          onTap: () {
+            setState(() => _selectedTheme = theme);
+            widget.onThemeChanged(theme);
+          },
           child: Container(
-            width: 60,
-            height: 60,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               color: theme.backgroundColor,
               borderRadius: BorderRadius.circular(12),
@@ -170,20 +218,42 @@ class PomodoroSettingsScreen extends StatelessWidget {
                   : null,
             ),
             child: Center(
-              child: Container(
-                width: 30,
-                height: 30,
-                decoration: BoxDecoration(
-                  color: theme.glowColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.glowColor.withOpacity(0.7),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+              // Miniature timer preview
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '25',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Orbitron',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: theme.glowColor.withOpacity(0.9),
+                          blurRadius: 8,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '00',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'Orbitron',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: theme.glowColor.withOpacity(0.9),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

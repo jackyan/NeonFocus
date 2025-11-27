@@ -108,33 +108,37 @@ class _ClockScreenState extends State<ClockScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Optional date
-                if (_showDate) ...[
-                  _buildDateDisplay(fontSize: infoFontSize),
-                  const SizedBox(height: 20),
-                ],
+                // Optional info row (date, weekday, battery) - all in one line
+                if (_showDate || _showWeekday || _showBattery)
+                  _buildInfoRow(fontSize: infoFontSize),
 
-                // Optional weekday
-                if (_showWeekday) ...[
-                  _buildWeekdayDisplay(fontSize: infoFontSize),
-                  const SizedBox(height: 20),
-                ],
+                if (_showDate || _showWeekday || _showBattery)
+                  const SizedBox(height: 30),
 
                 // Time display
                 isLandscape
                     ? _buildHorizontalTime(hourFontSize)
                     : _buildVerticalTime(hourFontSize),
-
-                // Optional battery
-                if (_showBattery) ...[
-                  const SizedBox(height: 20),
-                  _buildBatteryDisplay(fontSize: infoFontSize),
-                ],
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow({double fontSize = 14.0}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (_showDate) _buildDateDisplay(fontSize: fontSize),
+        if (_showDate && (_showWeekday || _showBattery))
+          SizedBox(width: 12),
+        if (_showWeekday) _buildWeekdayDisplay(fontSize: fontSize),
+        if (_showWeekday && _showBattery)
+          SizedBox(width: 12),
+        if (_showBattery) _buildBatteryDisplay(fontSize: fontSize),
+      ],
     );
   }
 
@@ -195,12 +199,13 @@ class _ClockScreenState extends State<ClockScreen> {
         fontSize: fontSize,
         color: widget.theme.textColor.withOpacity(0.7),
         fontWeight: FontWeight.w300,
+        decoration: TextDecoration.none, // No underline
       ),
     );
   }
 
   Widget _buildWeekdayDisplay({double fontSize = 14.0}) {
-    final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final weekday = weekdays[_currentTime.weekday - 1];
 
     return Text(
@@ -210,31 +215,18 @@ class _ClockScreenState extends State<ClockScreen> {
         fontSize: fontSize,
         color: widget.theme.textColor.withOpacity(0.7),
         fontWeight: FontWeight.w300,
+        decoration: TextDecoration.none, // No underline
       ),
     );
   }
 
   Widget _buildBatteryDisplay({double fontSize = 14.0}) {
-    // Placeholder for battery level
-    // In real app, use battery_plus package
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.battery_full,
-          size: fontSize + 4,
-          color: widget.theme.textColor.withOpacity(0.7),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          '100%',
-          style: TextStyle(
-            fontSize: fontSize,
-            color: widget.theme.textColor.withOpacity(0.7),
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-      ],
+    // Use horizontal battery icon, no percentage text
+    // In real app, use battery_plus package to get actual battery level
+    return Icon(
+      Icons.battery_std, // Horizontal battery icon
+      size: fontSize + 6,
+      color: widget.theme.textColor.withOpacity(0.7),
     );
   }
 }
