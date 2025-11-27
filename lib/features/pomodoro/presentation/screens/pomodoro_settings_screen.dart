@@ -47,7 +47,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
         color: const Color(0xFF0A0E27),
         borderRadius: BorderRadius.circular(20), // All corners rounded
         border: Border.all(
-          color: widget.currentTheme.glowColor.withOpacity(0.3),
+          color: _selectedTheme.glowColor.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -77,14 +77,14 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: widget.currentTheme.glowColor,
+                      color: _selectedTheme.glowColor,
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 30),
 
                   // Pomodoro Section
-                  _buildSectionTitle('POMODORO', widget.currentTheme),
+                  _buildSectionTitle('POMODORO', _selectedTheme),
                   const SizedBox(height: 15),
                   _buildToggleItem(
                     'Auto Start',
@@ -93,7 +93,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                       setState(() => _autoStart = value);
                       widget.onAutoStartToggle(value);
                     },
-                    widget.currentTheme,
+                    _selectedTheme,
                   ),
                   _buildToggleItem(
                     'Vibration Alert',
@@ -102,13 +102,13 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                       setState(() => _vibration = value);
                       widget.onVibrationToggle(value);
                     },
-                    widget.currentTheme,
+                    _selectedTheme,
                   ),
 
                   const SizedBox(height: 30),
 
                   // Theme Section
-                  _buildSectionTitle('THEME', widget.currentTheme),
+                  _buildSectionTitle('THEME', _selectedTheme),
                   const SizedBox(height: 15),
                   _buildThemeSelector(),
                 ],

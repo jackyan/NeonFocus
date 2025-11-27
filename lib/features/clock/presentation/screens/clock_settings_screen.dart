@@ -53,7 +53,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
         color: const Color(0xFF0A0E27),
         borderRadius: BorderRadius.circular(20), // All corners rounded
         border: Border.all(
-          color: widget.currentTheme.glowColor.withOpacity(0.3),
+          color: _selectedTheme.glowColor.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -83,14 +83,14 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: widget.currentTheme.glowColor,
+                      color: _selectedTheme.glowColor,
                       letterSpacing: 2,
                     ),
                   ),
                   const SizedBox(height: 30),
 
                   // Clock Section
-                  _buildSectionTitle('CLOCK', widget.currentTheme),
+                  _buildSectionTitle('CLOCK', _selectedTheme),
                   const SizedBox(height: 15),
                   _buildToggleItem(
                     'Show Date',
@@ -99,7 +99,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                       setState(() => _showDate = value);
                       widget.onDateToggle(value);
                     },
-                    widget.currentTheme,
+                    _selectedTheme,
                   ),
                   _buildToggleItem(
                     'Show Weekday',
@@ -108,7 +108,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                       setState(() => _showWeekday = value);
                       widget.onWeekdayToggle(value);
                     },
-                    widget.currentTheme,
+                    _selectedTheme,
                   ),
                   _buildToggleItem(
                     'Show Battery',
@@ -117,13 +117,13 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                       setState(() => _showBattery = value);
                       widget.onBatteryToggle(value);
                     },
-                    widget.currentTheme,
+                    _selectedTheme,
                   ),
 
                   const SizedBox(height: 30),
 
                   // Theme Section
-                  _buildSectionTitle('THEME', widget.currentTheme),
+                  _buildSectionTitle('THEME', _selectedTheme),
                   const SizedBox(height: 15),
                   _buildThemeSelector(),
                 ],
