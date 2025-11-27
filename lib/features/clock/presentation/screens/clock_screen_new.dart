@@ -170,21 +170,25 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildTimeDigit(String text, double fontSize) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: fontSize,
-        fontFamily: 'Orbitron',
-        fontWeight: FontWeight.bold,
-        color: Colors.white,
-        decoration: TextDecoration.none, // Ensure no underline
-        fontFeatures: const [FontFeature.tabularFigures()], // Equal width for all digits
-        shadows: [
-          Shadow(
-            color: widget.theme.glowColor.withOpacity(0.9),
-            blurRadius: 20,
-          ),
-        ],
+    return SizedBox(
+      width: fontSize * 1.35, // Fixed width to ensure all digit pairs have same width
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontFamily: 'Orbitron',
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          decoration: TextDecoration.none, // Ensure no underline
+          fontFeatures: const [FontFeature.tabularFigures()], // Equal width for all digits
+          shadows: [
+            Shadow(
+              color: widget.theme.glowColor.withOpacity(0.9),
+              blurRadius: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
