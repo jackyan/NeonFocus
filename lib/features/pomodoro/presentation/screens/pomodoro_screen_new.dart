@@ -132,7 +132,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
   Widget _buildTimeDigit(String text, double fontSize) {
     return SizedBox(
-      width: fontSize * 1.35, // Fixed width to ensure all digit pairs have same width
+      width: fontSize * 1.6, // Fixed width increased to accommodate all digit pairs with shadows
       child: Text(
         text,
         textAlign: TextAlign.center,
