@@ -94,8 +94,8 @@ class _ClockScreenState extends State<ClockScreen> {
     final size = MediaQuery.of(context).size;
     final isLandscape = size.width > size.height;
 
-    // 2x font sizes
-    final hourFontSize = isLandscape ? 120.0 : 160.0;
+    // 2x font sizes (+2 for better visibility)
+    final hourFontSize = isLandscape ? 122.0 : 162.0;
     final infoFontSize = 14.0; // System default size
 
     return GestureDetector(
@@ -176,6 +176,7 @@ class _ClockScreenState extends State<ClockScreen> {
         fontFamily: 'Orbitron',
         fontWeight: FontWeight.bold,
         color: Colors.white,
+        decoration: TextDecoration.none, // Ensure no underline
         shadows: [
           Shadow(
             color: widget.theme.glowColor.withOpacity(0.9),
@@ -221,10 +222,10 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildBatteryDisplay({double fontSize = 14.0}) {
-    // Use horizontal battery icon, no percentage text
+    // Use horizontal battery icon (landscape orientation), no percentage text
     // In real app, use battery_plus package to get actual battery level
     return Icon(
-      Icons.battery_std, // Horizontal battery icon
+      Icons.battery_full, // Horizontal battery icon in landscape orientation
       size: fontSize + 6,
       color: widget.theme.textColor.withOpacity(0.7),
     );

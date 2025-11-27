@@ -166,15 +166,15 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
               fontWeight: FontWeight.w300,
             ),
           ),
-          // Custom slim switch
+          // Custom slim switch (elegant: longer and thinner)
           GestureDetector(
             onTap: () => onChanged(!value),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 26,
+              width: 54,
+              height: 24,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(12),
                 color: value
                     ? Colors.green.withOpacity(0.8)
                     : Colors.grey.withOpacity(0.5),
@@ -183,8 +183,8 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                 duration: const Duration(milliseconds: 200),
                 alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  width: 22,
-                  height: 22,
+                  width: 20,
+                  height: 20,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -233,8 +233,8 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                   : null,
             ),
             child: Center(
-              // Miniature clock preview
-              child: Column(
+              // Miniature clock preview (landscape mode)
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -252,7 +252,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(width: 4),
                   Text(
                     '34',
                     style: TextStyle(

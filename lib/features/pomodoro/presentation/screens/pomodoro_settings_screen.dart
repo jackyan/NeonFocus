@@ -151,15 +151,15 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
               fontWeight: FontWeight.w300,
             ),
           ),
-          // Custom slim switch
+          // Custom slim switch (elegant: longer and thinner)
           GestureDetector(
             onTap: () => onChanged(!value),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 48,
-              height: 26,
+              width: 54,
+              height: 24,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(12),
                 color: value
                     ? Colors.green.withOpacity(0.8)
                     : Colors.grey.withOpacity(0.5),
@@ -168,8 +168,8 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                 duration: const Duration(milliseconds: 200),
                 alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  width: 22,
-                  height: 22,
+                  width: 20,
+                  height: 20,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -218,8 +218,8 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                   : null,
             ),
             child: Center(
-              // Miniature timer preview
-              child: Column(
+              // Miniature timer preview (landscape mode)
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
@@ -237,7 +237,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(width: 4),
                   Text(
                     '00',
                     style: TextStyle(
