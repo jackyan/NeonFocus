@@ -166,15 +166,15 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
               fontWeight: FontWeight.w300,
             ),
           ),
-          // Custom slim switch (elegant: longer and thinner)
+          // Custom slim switch (elegant: 2/3 thickness)
           GestureDetector(
             onTap: () => onChanged(!value),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 54,
-              height: 24,
+              height: 16,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
                 color: value
                     ? Colors.green.withOpacity(0.8)
                     : Colors.grey.withOpacity(0.5),
@@ -183,8 +183,8 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                 duration: const Duration(milliseconds: 200),
                 alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
-                  width: 20,
-                  height: 20,
+                  width: 12,
+                  height: 12,
                   margin: const EdgeInsets.symmetric(horizontal: 2),
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -211,11 +211,11 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
             widget.onThemeChanged(theme);
           },
           child: Container(
-            width: 70,
-            height: 70,
+            width: 90,
+            height: 50,
             decoration: BoxDecoration(
               color: theme.backgroundColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(
                 color: isSelected
                     ? theme.glowColor
@@ -233,14 +233,14 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                   : null,
             ),
             child: Center(
-              // Miniature clock preview (landscape mode)
+              // Miniature clock preview (landscape mode with H:M:S)
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     '12',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontFamily: 'Orbitron',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -252,11 +252,27 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 4),
+                  const SizedBox(width: 3),
                   Text(
                     '34',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
+                      fontFamily: 'Orbitron',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          color: theme.glowColor.withOpacity(0.9),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    '56',
+                    style: TextStyle(
+                      fontSize: 14,
                       fontFamily: 'Orbitron',
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
