@@ -172,31 +172,55 @@ class _ClockScreenState extends State<ClockScreen> {
   Widget _buildTimeDigit(String text, double fontSize) {
     // Split the two-digit text into individual characters
     // Each character gets its own fixed-width container
-    // This ensures all digit pairs have identical total width regardless of which digits appear
+    // Add consistent spacing between digits for better visual balance
     final chars = text.split('');
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: chars.map((char) => SizedBox(
-        width: fontSize * 0.75, // Fixed width per single digit
-        child: Text(
-          char,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontFamily: 'Orbitron',
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            decoration: TextDecoration.none,
-            fontFeatures: const [FontFeature.tabularFigures()],
-            shadows: [
-              Shadow(
-                color: widget.theme.glowColor.withOpacity(0.9),
-                blurRadius: 20,
-              ),
-            ],
+      children: [
+        SizedBox(
+          width: fontSize * 0.72, // Fixed width per single digit
+          child: Text(
+            chars[0],
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontFamily: 'Orbitron',
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              decoration: TextDecoration.none,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              shadows: [
+                Shadow(
+                  color: widget.theme.glowColor.withOpacity(0.9),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
           ),
         ),
-      )).toList(),
+        SizedBox(width: fontSize * 0.06), // Consistent spacing between digits
+        SizedBox(
+          width: fontSize * 0.72, // Fixed width per single digit
+          child: Text(
+            chars[1],
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontFamily: 'Orbitron',
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              decoration: TextDecoration.none,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              shadows: [
+                Shadow(
+                  color: widget.theme.glowColor.withOpacity(0.9),
+                  blurRadius: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
