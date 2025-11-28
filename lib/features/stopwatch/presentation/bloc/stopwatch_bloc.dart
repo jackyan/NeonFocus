@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import '../../domain/stopwatch_model.dart';
 import 'stopwatch_event.dart';
 import 'stopwatch_state.dart';
 
-/// Stopwatch BLoC
-class StopwatchBloc extends Bloc<StopwatchEvent, StopwatchState> {
+/// Stopwatch BLoC with data persistence
+class StopwatchBloc extends HydratedBloc<StopwatchEvent, StopwatchState> {
   Timer? _timer;
 
   StopwatchBloc() : super(StopwatchState.initial()) {
@@ -94,5 +94,23 @@ class StopwatchBloc extends Bloc<StopwatchEvent, StopwatchState> {
   Future<void> close() {
     _timer?.cancel();
     return super.close();
+  }
+
+  @override
+  StopwatchState? fromJson(Map<String, dynamic> json) {
+    try {
+      return StopwatchState.fromJson(json);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic>? toJson(StopwatchState state) {
+    try {
+      return state.toJson();
+    } catch (_) {
+      return null;
+    }
   }
 }
