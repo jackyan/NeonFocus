@@ -79,19 +79,19 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     _gravityService.addOrientationListener(_onOrientationChanged);
   }
 
-  void _onOrientationChanged(DeviceOrientation orientation) {
+  void _onOrientationChanged(GravityOrientation orientation) {
     if (!_gravityEnabled || !mounted || _isShowingCountdown) return;
 
     final currentBloc = context.read<PomodoroBloc>();
     final currentState = currentBloc.state.pomodoro;
     final status = currentState.status.toString();
 
-    if (orientation == DeviceOrientation.faceDown) {
+    if (orientation == GravityOrientation.faceDown) {
       // Screen face down → Start focus mode
       if (status.contains('idle')) {
         _showCountdownAndStart();
       }
-    } else if (orientation == DeviceOrientation.faceUp) {
+    } else if (orientation == GravityOrientation.faceUp) {
       // Screen face up → Pause (only when running)
       if (status.contains('running')) {
         currentBloc.add(const PausePomodoro());
