@@ -45,8 +45,13 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   void initState() {
     super.initState();
     _audioService.initialize();
-    _setupGravityListener();
+    _initializeGravity();
     _startBurninProtection();
+  }
+
+  Future<void> _initializeGravity() async {
+    await _gravityService.initialize();
+    _setupGravityListener();
   }
 
   void _startBurninProtection() {
@@ -65,35 +70,37 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
   @override
   void dispose() {
-    _gravityService.dispose();
+    _gravityService.removeOrientationListener(_onOrientationChanged);
     _burninProtection.removeOffsetListener(_onBurninOffsetChanged);
     super.dispose();
   }
 
   void _setupGravityListener() {
-    _gravityService.addListener((orientation) {
-      if (!_gravityEnabled || !mounted || _isShowingCountdown) return;
+    _gravityService.addOrientationListener(_onOrientationChanged);
+  }
 
-      final currentBloc = context.read<PomodoroBloc>();
-      final currentState = currentBloc.state.pomodoro;
-      final status = currentState.status.toString();
+  void _onOrientationChanged(DeviceOrientation orientation) {
+    if (!_gravityEnabled || !mounted || _isShowingCountdown) return;
 
-      if (orientation == DeviceOrientation.faceDown) {
-        // Screen face down → Start focus mode
-        if (status.contains('idle')) {
-          _showCountdownAndStart();
-        }
-      } else if (orientation == DeviceOrientation.faceUp) {
-        // Screen face up → Pause (only when running)
-        if (status.contains('running')) {
-          currentBloc.add(const PausePomodoro());
-          if (_vibration) {
-            HapticFeedback.mediumImpact();
-          }
-          _showPauseDialog();
-        }
+    final currentBloc = context.read<PomodoroBloc>();
+    final currentState = currentBloc.state.pomodoro;
+    final status = currentState.status.toString();
+
+    if (orientation == DeviceOrientation.faceDown) {
+      // Screen face down → Start focus mode
+      if (status.contains('idle')) {
+        _showCountdownAndStart();
       }
-    });
+    } else if (orientation == DeviceOrientation.faceUp) {
+      // Screen face up → Pause (only when running)
+      if (status.contains('running')) {
+        currentBloc.add(const PausePomodoro());
+        if (_vibration) {
+          HapticFeedback.mediumImpact();
+        }
+        _showPauseDialog();
+      }
+    }
   }
 
   void _showCountdownAndStart() {
