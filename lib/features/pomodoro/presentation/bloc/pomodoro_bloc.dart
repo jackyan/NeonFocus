@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../domain/pomodoro_model.dart';
 import 'pomodoro_event.dart';
 import 'pomodoro_state.dart';
@@ -7,6 +8,7 @@ import 'pomodoro_state.dart';
 /// Pomodoro BLoC
 class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
   Timer? _timer;
+  final NotificationService _notificationService = NotificationService();
 
   PomodoroBloc() : super(PomodoroState.initial()) {
     on<StartPomodoro>(_onStart);
@@ -81,12 +83,22 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
     ));
   }
 
-  void _onCompleteSession(CompleteSession event, Emitter<PomodoroState> emit) {
+  void _onCompleteSession(CompleteSession event, Emitter<PomodoroState> emit) async {
     _timer?.cancel();
+
+    final newSessionCount = state.pomodoro.completedSessions + 1;
+
+    // Send completion notification
+    await _notificationService.showPomodoroComplete(
+      sessionNumber: newSessionCount,
+      sessionType: 'work',
+      durationMinutes: state.pomodoro.durationMinutes,
+    );
+
     emit(state.copyWith(
       pomodoro: state.pomodoro.copyWith(
         status: PomodoroStatus.completed,
-        completedSessions: state.pomodoro.completedSessions + 1,
+        completedSessions: newSessionCount,
       ),
     ));
   }

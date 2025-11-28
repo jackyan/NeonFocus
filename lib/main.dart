@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/themes/glow_theme.dart';
+import 'core/services/notification_service.dart';
 import 'features/clock/presentation/screens/clock_screen_new.dart';
 import 'features/pomodoro/presentation/screens/pomodoro_screen_new.dart';
+import 'features/stopwatch/presentation/screens/stopwatch_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+  await NotificationService().requestPermissions();
 
   // Set system UI to immersive mode (fullscreen, hide status bar)
   SystemChrome.setEnabledSystemUIMode(
@@ -93,6 +99,12 @@ class _MainScreenState extends State<MainScreen> {
 
           // Pomodoro screen
           PomodoroScreen(
+            theme: _currentTheme,
+            onThemeChanged: _changeTheme,
+          ),
+
+          // Stopwatch screen
+          StopwatchScreen(
             theme: _currentTheme,
             onThemeChanged: _changeTheme,
           ),
