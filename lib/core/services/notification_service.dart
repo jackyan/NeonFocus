@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'dart:io';
+import 'dart:typed_data';
 
 /// Notification service for managing local notifications
 class NotificationService {
@@ -89,7 +90,7 @@ class NotificationService {
   }) async {
     if (!_isInitialized) await initialize();
 
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'pomodoro_channel',
       'Pomodoro Notifications',
       channelDescription: 'Notifications for pomodoro timer completion',
@@ -99,7 +100,7 @@ class NotificationService {
       enableVibration: true,
       vibrationPattern: Int64List.fromList([0, 500, 250, 500]),
       icon: '@mipmap/ic_launcher',
-      styleInformation: BigTextStyleInformation(''),
+      styleInformation: const BigTextStyleInformation(''),
     );
 
     const iosDetails = DarwinNotificationDetails(
@@ -110,7 +111,7 @@ class NotificationService {
       interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
