@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/burnin_protection_service.dart';
+import '../../../../core/services/charging_service.dart';
 import 'clock_settings_screen.dart';
 
 /// Minimalist clock screen with vertical/horizontal layout
@@ -23,10 +24,15 @@ class ClockScreen extends StatefulWidget {
 
 class _ClockScreenState extends State<ClockScreen> {
   final BurninProtectionService _burninProtection = BurninProtectionService();
+  final ChargingService _chargingService = ChargingService();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
   double _offsetX = 0.0;
   double _offsetY = 0.0;
+
+  // Charging state
+  bool _isCharging = false;
+  int _batteryLevel = 100;
 
   // Settings
   bool _showDate = false;
@@ -38,6 +44,37 @@ class _ClockScreenState extends State<ClockScreen> {
     super.initState();
     _startTimer();
     _startBurninProtection();
+    _initializeCharging();
+  }
+
+  Future<void> _initializeCharging() async {
+    await _chargingService.initialize();
+
+    // Set initial state
+    setState(() {
+      _isCharging = _chargingService.isCharging;
+      _batteryLevel = _chargingService.batteryLevel;
+    });
+
+    // Add listeners
+    _chargingService.addChargingListener(_onChargingChanged);
+    _chargingService.addBatteryLevelListener(_onBatteryLevelChanged);
+  }
+
+  void _onChargingChanged(bool isCharging) {
+    if (mounted) {
+      setState(() {
+        _isCharging = isCharging;
+      });
+    }
+  }
+
+  void _onBatteryLevelChanged(int level) {
+    if (mounted) {
+      setState(() {
+        _batteryLevel = level;
+      });
+    }
   }
 
   void _startBurninProtection() {
@@ -68,6 +105,8 @@ class _ClockScreenState extends State<ClockScreen> {
   void dispose() {
     _timer?.cancel();
     _burninProtection.removeOffsetListener(_onBurninOffsetChanged);
+    _chargingService.removeChargingListener(_onChargingChanged);
+    _chargingService.removeBatteryLevelListener(_onBatteryLevelChanged);
     super.dispose();
   }
 
@@ -262,15 +301,64 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildBatteryDisplay({double fontSize = 14.0}) {
-    // Rotate battery icon 90 degrees to landscape orientation, no percentage text
-    // In real app, use battery_plus package to get actual battery level
-    return Transform.rotate(
-      angle: 1.5708, // 90 degrees in radians (π/2)
-      child: Icon(
-        Icons.battery_full, // Battery icon rotated to landscape orientation
-        size: fontSize + 6,
-        color: widget.theme.textColor.withOpacity(0.7),
-      ),
+    // Determine battery icon based on level
+    IconData batteryIcon;
+    if (_batteryLevel >= 90) {
+      batteryIcon = Icons.battery_full;
+    } else if (_batteryLevel >= 70) {
+      batteryIcon = Icons.battery_6_bar;
+    } else if (_batteryLevel >= 50) {
+      batteryIcon = Icons.battery_5_bar;
+    } else if (_batteryLevel >= 30) {
+      batteryIcon = Icons.battery_3_bar;
+    } else if (_batteryLevel >= 15) {
+      batteryIcon = Icons.battery_2_bar;
+    } else {
+      batteryIcon = Icons.battery_1_bar;
+    }
+
+    // If charging, use charging icon
+    if (_isCharging && _batteryLevel < 100) {
+      batteryIcon = Icons.battery_charging_full;
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Transform.rotate(
+          angle: 1.5708, // 90 degrees in radians (π/2)
+          child: Icon(
+            batteryIcon,
+            size: fontSize + 6,
+            color: _batteryLevel < 20
+                ? Colors.red.withOpacity(0.8)
+                : widget.theme.textColor.withOpacity(0.7),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$_batteryLevel%',
+          style: TextStyle(
+            fontSize: fontSize * 0.9,
+            color: widget.theme.textColor.withOpacity(0.7),
+            fontWeight: FontWeight.w300,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        // Show charging info when charging
+        if (_isCharging) ...[
+          const SizedBox(width: 8),
+          Text(
+            '⚡ ${_chargingService.getFormattedTimeRemaining()}',
+            style: TextStyle(
+              fontSize: fontSize * 0.85,
+              color: widget.theme.glowColor.withOpacity(0.9),
+              fontWeight: FontWeight.w300,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
