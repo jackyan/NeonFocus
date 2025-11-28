@@ -6,8 +6,10 @@ class PomodoroSettingsScreen extends StatefulWidget {
   final NeonTheme currentTheme;
   final bool autoStart;
   final bool vibration;
+  final bool gravityEnabled;
   final Function(bool) onAutoStartToggle;
   final Function(bool) onVibrationToggle;
+  final Function(bool) onGravityToggle;
   final Function(NeonTheme) onThemeChanged;
 
   const PomodoroSettingsScreen({
@@ -15,8 +17,10 @@ class PomodoroSettingsScreen extends StatefulWidget {
     required this.currentTheme,
     required this.autoStart,
     required this.vibration,
+    required this.gravityEnabled,
     required this.onAutoStartToggle,
     required this.onVibrationToggle,
+    required this.onGravityToggle,
     required this.onThemeChanged,
   }) : super(key: key);
 
@@ -27,6 +31,7 @@ class PomodoroSettingsScreen extends StatefulWidget {
 class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
   late bool _autoStart;
   late bool _vibration;
+  late bool _gravityEnabled;
   late NeonTheme _selectedTheme;
 
   @override
@@ -34,6 +39,7 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
     super.initState();
     _autoStart = widget.autoStart;
     _vibration = widget.vibration;
+    _gravityEnabled = widget.gravityEnabled;
     _selectedTheme = widget.currentTheme;
   }
 
@@ -104,6 +110,16 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                     },
                     _selectedTheme,
                   ),
+                  _buildToggleItem(
+                    'Gravity Interaction',
+                    _gravityEnabled,
+                    (value) {
+                      setState(() => _gravityEnabled = value);
+                      widget.onGravityToggle(value);
+                    },
+                    _selectedTheme,
+                    subtitle: 'Flip phone to start/pause',
+                  ),
 
                   const SizedBox(height: 30),
 
@@ -136,19 +152,39 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
     String label,
     bool value,
     Function(bool) onChanged,
-    NeonTheme theme,
-  ) {
+    NeonTheme theme, {
+    String? subtitle,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-              fontWeight: FontWeight.w300,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withOpacity(0.5),
+                        fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           // Custom slim switch (elegant: 2/3 thickness)

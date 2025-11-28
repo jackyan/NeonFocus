@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/gravity_service.dart';
 import '../bloc/pomodoro_bloc.dart';
 import '../bloc/pomodoro_event.dart';
 import '../bloc/pomodoro_state.dart';
@@ -26,15 +27,148 @@ class PomodoroScreen extends StatefulWidget {
 
 class _PomodoroScreenState extends State<PomodoroScreen> {
   final AudioService _audioService = AudioService();
+  final GravityService _gravityService = GravityService();
 
   // Settings
   bool _autoStart = false;
   bool _vibration = true;
+  bool _gravityEnabled = true;
+  bool _isShowingCountdown = false;
 
   @override
   void initState() {
     super.initState();
     _audioService.initialize();
+    _setupGravityListener();
+  }
+
+  @override
+  void dispose() {
+    _gravityService.dispose();
+    super.dispose();
+  }
+
+  void _setupGravityListener() {
+    _gravityService.addListener((orientation) {
+      if (!_gravityEnabled || !mounted || _isShowingCountdown) return;
+
+      final currentBloc = context.read<PomodoroBloc>();
+      final currentState = currentBloc.state.pomodoro;
+      final status = currentState.status.toString();
+
+      if (orientation == DeviceOrientation.faceDown) {
+        // Screen face down → Start focus mode
+        if (status.contains('idle')) {
+          _showCountdownAndStart();
+        }
+      } else if (orientation == DeviceOrientation.faceUp) {
+        // Screen face up → Pause (only when running)
+        if (status.contains('running')) {
+          currentBloc.add(const PausePomodoro());
+          if (_vibration) {
+            HapticFeedback.mediumImpact();
+          }
+          _showPauseDialog();
+        }
+      }
+    });
+  }
+
+  void _showCountdownAndStart() {
+    _isShowingCountdown = true;
+    if (_vibration) {
+      HapticFeedback.heavyImpact();
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: widget.theme.backgroundColor.withOpacity(0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: widget.theme.glowColor, width: 2),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Starting in...',
+              style: TextStyle(
+                color: widget.theme.textColor,
+                fontSize: 20,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+            SizedBox(height: 30),
+            TweenAnimationBuilder(
+              tween: Tween<double>(begin: 2, end: 0),
+              duration: Duration(seconds: 2),
+              builder: (context, value, child) {
+                return Text(
+                  value.ceil().toString(),
+                  style: TextStyle(
+                    fontSize: 96,
+                    color: widget.theme.glowColor,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Orbitron',
+                    shadows: [
+                      Shadow(
+                        color: widget.theme.glowColor.withOpacity(0.8),
+                        blurRadius: 30,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Auto-start after 2 seconds
+    Future.delayed(Duration(seconds: 2), () {
+      if (mounted) {
+        Navigator.of(context).pop();
+        context.read<PomodoroBloc>().add(const StartPomodoro());
+        _isShowingCountdown = false;
+      }
+    });
+  }
+
+  void _showPauseDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AlertDialog(
+        backgroundColor: widget.theme.backgroundColor.withOpacity(0.95),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: widget.theme.glowColor, width: 2),
+        ),
+        title: Text(
+          'Paused',
+          style: TextStyle(
+            color: widget.theme.glowColor,
+            fontFamily: 'Orbitron',
+          ),
+        ),
+        content: Text(
+          'Flip phone face down to resume',
+          style: TextStyle(color: widget.theme.textColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'OK',
+              style: TextStyle(color: widget.theme.glowColor),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showSettings(BuildContext blocContext) {
@@ -47,8 +181,10 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         currentTheme: widget.theme,
         autoStart: _autoStart,
         vibration: _vibration,
+        gravityEnabled: _gravityEnabled,
         onAutoStartToggle: (value) => setState(() => _autoStart = value),
         onVibrationToggle: (value) => setState(() => _vibration = value),
+        onGravityToggle: (value) => setState(() => _gravityEnabled = value),
         onThemeChanged: widget.onThemeChanged,
       ),
     );
