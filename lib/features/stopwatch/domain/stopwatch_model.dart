@@ -19,6 +19,24 @@ class Lap extends Equatable {
     required this.lapSeconds,
   });
 
+  /// Create from JSON
+  factory Lap.fromJson(Map<String, dynamic> json) {
+    return Lap(
+      lapNumber: json['lapNumber'] as int,
+      elapsedSeconds: json['elapsedSeconds'] as int,
+      lapSeconds: json['lapSeconds'] as int,
+    );
+  }
+
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'lapNumber': lapNumber,
+      'elapsedSeconds': elapsedSeconds,
+      'lapSeconds': lapSeconds,
+    };
+  }
+
   @override
   List<Object?> get props => [lapNumber, elapsedSeconds, lapSeconds];
 }
@@ -63,6 +81,26 @@ class Stopwatch extends Equatable {
   int get hours => (elapsedSeconds / 3600).floor();
   int get minutes => ((elapsedSeconds % 3600) / 60).floor();
   int get seconds => elapsedSeconds % 60;
+
+  /// Create from JSON
+  factory Stopwatch.fromJson(Map<String, dynamic> json) {
+    return Stopwatch(
+      elapsedSeconds: json['elapsedSeconds'] as int,
+      status: StopwatchStatus.values[json['status'] as int],
+      laps: (json['laps'] as List<dynamic>)
+          .map((lap) => Lap.fromJson(lap as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'elapsedSeconds': elapsedSeconds,
+      'status': status.index,
+      'laps': laps.map((lap) => lap.toJson()).toList(),
+    };
+  }
 
   @override
   List<Object?> get props => [

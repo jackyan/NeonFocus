@@ -69,6 +69,28 @@ class Pomodoro extends Equatable {
   double get progress =>
       1.0 - (remainingSeconds / (durationMinutes * 60));
 
+  /// Create from JSON
+  factory Pomodoro.fromJson(Map<String, dynamic> json) {
+    return Pomodoro(
+      durationMinutes: json['durationMinutes'] as int,
+      remainingSeconds: json['remainingSeconds'] as int,
+      status: PomodoroStatus.values[json['status'] as int],
+      sessionType: SessionType.values[json['sessionType'] as int],
+      completedSessions: json['completedSessions'] as int,
+    );
+  }
+
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'durationMinutes': durationMinutes,
+      'remainingSeconds': remainingSeconds,
+      'status': status.index,
+      'sessionType': sessionType.index,
+      'completedSessions': completedSessions,
+    };
+  }
+
   @override
   List<Object?> get props => [
         durationMinutes,
