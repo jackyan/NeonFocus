@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/gravity_service.dart';
+import '../../../../core/services/burnin_protection_service.dart';
 import '../bloc/pomodoro_bloc.dart';
 import '../bloc/pomodoro_event.dart';
 import '../bloc/pomodoro_state.dart';
@@ -28,6 +29,11 @@ class PomodoroScreen extends StatefulWidget {
 class _PomodoroScreenState extends State<PomodoroScreen> {
   final AudioService _audioService = AudioService();
   final GravityService _gravityService = GravityService();
+  final BurninProtectionService _burninProtection = BurninProtectionService();
+
+  // Burn-in protection offsets
+  double _offsetX = 0.0;
+  double _offsetY = 0.0;
 
   // Settings
   bool _autoStart = false;
@@ -40,11 +46,27 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     super.initState();
     _audioService.initialize();
     _setupGravityListener();
+    _startBurninProtection();
+  }
+
+  void _startBurninProtection() {
+    _burninProtection.addOffsetListener(_onBurninOffsetChanged);
+    _burninProtection.start();
+  }
+
+  void _onBurninOffsetChanged(double x, double y) {
+    if (mounted) {
+      setState(() {
+        _offsetX = x;
+        _offsetY = y;
+      });
+    }
   }
 
   @override
   void dispose() {
     _gravityService.dispose();
+    _burninProtection.removeOffsetListener(_onBurninOffsetChanged);
     super.dispose();
   }
 
@@ -224,20 +246,23 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
             return Container(
               color: widget.theme.backgroundColor,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Timer display
-                    isLandscape
-                        ? _buildHorizontalTimer(minutes, seconds, timerFontSize)
-                        : _buildVerticalTimer(minutes, seconds, timerFontSize),
+              child: Transform.translate(
+                offset: Offset(_offsetX, _offsetY),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Timer display
+                      isLandscape
+                          ? _buildHorizontalTimer(minutes, seconds, timerFontSize)
+                          : _buildVerticalTimer(minutes, seconds, timerFontSize),
 
-                    SizedBox(height: isLandscape ? 40 : 60),
+                      SizedBox(height: isLandscape ? 40 : 60),
 
-                    // Control icons
-                    _buildControlIcons(context, pomodoro.status, iconSize),
-                  ],
+                      // Control icons
+                      _buildControlIcons(context, pomodoro.status, iconSize),
+                    ],
+                  ),
                 ),
               ),
             );

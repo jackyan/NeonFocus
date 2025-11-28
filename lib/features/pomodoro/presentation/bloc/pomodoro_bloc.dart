@@ -86,19 +86,54 @@ class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   void _onCompleteSession(CompleteSession event, Emitter<PomodoroState> emit) async {
     _timer?.cancel();
 
-    final newSessionCount = state.pomodoro.completedSessions + 1;
+    final currentSessionType = state.pomodoro.sessionType;
+    final currentCompletedSessions = state.pomodoro.completedSessions;
 
-    // Send completion notification
-    await _notificationService.showPomodoroComplete(
-      sessionNumber: newSessionCount,
-      sessionType: 'work',
-      durationMinutes: state.pomodoro.durationMinutes,
-    );
+    // Determine next session type and duration
+    SessionType nextSessionType;
+    int nextDuration;
+    int newCompletedSessions = currentCompletedSessions;
 
+    if (currentSessionType == SessionType.work) {
+      // Work session completed, increment counter
+      newCompletedSessions = currentCompletedSessions + 1;
+
+      // Determine if it's time for long break (every 4 work sessions)
+      if (newCompletedSessions % PomodoroConfig.sessionsBeforeLongBreak == 0) {
+        nextSessionType = SessionType.longBreak;
+        nextDuration = PomodoroConfig.longBreakDuration;
+      } else {
+        nextSessionType = SessionType.shortBreak;
+        nextDuration = PomodoroConfig.shortBreakDuration;
+      }
+
+      // Send work completion notification
+      await _notificationService.showPomodoroComplete(
+        sessionNumber: newCompletedSessions,
+        sessionType: 'work',
+        durationMinutes: state.pomodoro.durationMinutes,
+      );
+    } else {
+      // Break session completed, go back to work
+      nextSessionType = SessionType.work;
+      nextDuration = PomodoroConfig.workDuration;
+
+      // Send break completion notification
+      await _notificationService.showPomodoroComplete(
+        sessionNumber: currentCompletedSessions,
+        sessionType: currentSessionType == SessionType.shortBreak ? 'short_break' : 'long_break',
+        durationMinutes: state.pomodoro.durationMinutes,
+      );
+    }
+
+    // Auto-switch to next session
     emit(state.copyWith(
-      pomodoro: state.pomodoro.copyWith(
-        status: PomodoroStatus.completed,
-        completedSessions: newSessionCount,
+      pomodoro: Pomodoro(
+        durationMinutes: nextDuration,
+        remainingSeconds: nextDuration * 60,
+        status: PomodoroStatus.idle,
+        sessionType: nextSessionType,
+        completedSessions: newCompletedSessions,
       ),
     ));
   }
