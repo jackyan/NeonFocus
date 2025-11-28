@@ -23,6 +23,20 @@ class StopwatchState extends Equatable {
     );
   }
 
+  /// Create state from JSON
+  factory StopwatchState.fromJson(Map<String, dynamic> json) {
+    return StopwatchState(
+      stopwatch: Stopwatch.fromJson(json['stopwatch'] as Map<String, dynamic>),
+    );
+  }
+
+  /// Convert state to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'stopwatch': stopwatch.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [stopwatch];
 }

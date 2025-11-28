@@ -23,6 +23,20 @@ class PomodoroState extends Equatable {
     );
   }
 
+  /// Create state from JSON
+  factory PomodoroState.fromJson(Map<String, dynamic> json) {
+    return PomodoroState(
+      pomodoro: Pomodoro.fromJson(json['pomodoro'] as Map<String, dynamic>),
+    );
+  }
+
+  /// Convert state to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'pomodoro': pomodoro.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [pomodoro];
 }

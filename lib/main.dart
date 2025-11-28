@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 import 'core/themes/glow_theme.dart';
 import 'core/services/notification_service.dart';
 import 'features/clock/presentation/screens/clock_screen_new.dart';
@@ -8,6 +11,14 @@ import 'features/stopwatch/presentation/screens/stopwatch_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive for data persistence
+  await Hive.initFlutter();
+
+  // Initialize HydratedBloc storage
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: await getApplicationDocumentsDirectory(),
+  );
 
   // Initialize notification service
   await NotificationService().initialize();

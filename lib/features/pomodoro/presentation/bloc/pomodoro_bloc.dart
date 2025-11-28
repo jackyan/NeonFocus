@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../domain/pomodoro_model.dart';
 import 'pomodoro_event.dart';
 import 'pomodoro_state.dart';
 
-/// Pomodoro BLoC
-class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
+/// Pomodoro BLoC with data persistence
+class PomodoroBloc extends HydratedBloc<PomodoroEvent, PomodoroState> {
   Timer? _timer;
   final NotificationService _notificationService = NotificationService();
 
@@ -107,5 +107,23 @@ class PomodoroBloc extends Bloc<PomodoroEvent, PomodoroState> {
   Future<void> close() {
     _timer?.cancel();
     return super.close();
+  }
+
+  @override
+  PomodoroState? fromJson(Map<String, dynamic> json) {
+    try {
+      return PomodoroState.fromJson(json);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Map<String, dynamic>? toJson(PomodoroState state) {
+    try {
+      return state.toJson();
+    } catch (_) {
+      return null;
+    }
   }
 }
