@@ -40,6 +40,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   bool _vibration = true;
   bool _gravityEnabled = true;
   bool _isShowingCountdown = false;
+  Ambience _currentAmbience = Ambience.none;
 
   @override
   void initState() {
@@ -215,6 +216,9 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         onVibrationToggle: (value) => setState(() => _vibration = value),
         onGravityToggle: (value) => setState(() => _gravityEnabled = value),
         onThemeChanged: widget.onThemeChanged,
+        audioService: _audioService,
+        currentAmbience: _currentAmbience,
+        onAmbienceChanged: (ambience) => setState(() => _currentAmbience = ambience),
       ),
     );
   }
