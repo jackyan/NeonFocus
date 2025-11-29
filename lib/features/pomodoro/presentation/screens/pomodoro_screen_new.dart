@@ -6,6 +6,8 @@ import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/gravity_service.dart';
 import '../../../../core/services/burnin_protection_service.dart';
+import '../../../../core/services/settings_service.dart';
+import '../../domain/pomodoro_model.dart';
 import '../bloc/pomodoro_bloc.dart';
 import '../bloc/pomodoro_event.dart';
 import '../bloc/pomodoro_state.dart';
@@ -30,6 +32,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   final AudioService _audioService = AudioService();
   final GravityService _gravityService = GravityService();
   final BurninProtectionService _burninProtection = BurninProtectionService();
+  final SettingsService _settingsService = SettingsService();
 
   // Burn-in protection offsets
   double _offsetX = 0.0;
@@ -41,9 +44,13 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   bool _gravityEnabled = true;
   bool _isShowingCountdown = false;
   Ambience _currentAmbience = Ambience.none;
+  bool _soundEffectsEnabled = true;
 
   // Track previous status to play sounds only on state transitions
   String _previousStatus = 'idle';
+  
+  // Track previous seconds for digit flip sound
+  int _previousSeconds = -1;
 
   @override
   void initState() {
@@ -51,6 +58,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     _audioService.initialize();
     // Restore ambience state from AudioService
     _currentAmbience = _audioService.currentAmbienceEnum;
+    // Load sound effects setting
+    _soundEffectsEnabled = _settingsService.getSoundEffectsEnabled();
     _initializeGravity();
     _startBurninProtection();
   }
@@ -206,6 +215,12 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
     );
   }
 
+  void _loadSettings() {
+    setState(() {
+      _soundEffectsEnabled = _settingsService.getSoundEffectsEnabled();
+    });
+  }
+
   void _showSettings(BuildContext blocContext) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
@@ -224,8 +239,12 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
         audioService: _audioService,
         currentAmbience: _currentAmbience,
         onAmbienceChanged: (ambience) => setState(() => _currentAmbience = ambience),
+        onSettingsChanged: _loadSettings, // Reload settings immediately when changed
       ),
-    );
+    ).then((_) {
+      // Also reload when modal is closed
+      _loadSettings();
+    });
   }
 
   @override
@@ -249,13 +268,13 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
           // Only play sounds when status changes
           if (currentStatus != _previousStatus) {
             if (currentStatus.contains('running') && !_previousStatus.contains('running')) {
-              // Transitioning to running state - play start sound once
+              // Transitioning to running state - play start sound (always)
               _audioService.playEffect(AudioEffect.timerStart);
             } else if (currentStatus.contains('paused') && !_previousStatus.contains('paused')) {
-              // Transitioning to paused state
+              // Transitioning to paused state (always)
               _audioService.playEffect(AudioEffect.uiClick);
             } else if (currentStatus.contains('completed')) {
-              // Completed state
+              // Completed state (always)
               _audioService.playEffect(AudioEffect.timerComplete);
               if (_vibration) {
                 HapticFeedback.heavyImpact();
@@ -264,6 +283,16 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
 
             _previousStatus = currentStatus;
           }
+          
+          // Play digit flip sound when seconds change (only if enabled)
+          final currentSeconds = state.pomodoro.remainingSeconds % 60;
+          if (state.pomodoro.status == PomodoroStatus.running && 
+              currentSeconds != _previousSeconds && 
+              _previousSeconds != -1 &&
+              _soundEffectsEnabled) {
+            _audioService.playEffect(AudioEffect.digitFlip);
+          }
+          _previousSeconds = currentSeconds;
         },
         child: BlocBuilder<PomodoroBloc, PomodoroState>(
           builder: (context, state) {

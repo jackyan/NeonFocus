@@ -9,6 +9,7 @@ import '../bloc/stopwatch_bloc.dart';
 import '../bloc/stopwatch_event.dart';
 import '../bloc/stopwatch_state.dart';
 import 'stopwatch_settings_screen.dart';
+import 'lap_history_screen.dart';
 
 /// Minimalist stopwatch screen
 class StopwatchScreen extends StatefulWidget {
@@ -27,7 +28,6 @@ class StopwatchScreen extends StatefulWidget {
 
 class _StopwatchScreenState extends State<StopwatchScreen> {
   final AudioService _audioService = AudioService();
-  bool _showHistory = false;
 
   @override
   void initState() {
@@ -49,11 +49,17 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
     );
   }
 
-  void _toggleHistory() {
-    setState(() {
-      _showHistory = !_showHistory;
-    });
-    HapticFeedback.lightImpact();
+  void _showLapHistory(List<Lap> laps) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => LapHistoryScreen(
+        laps: laps,
+        theme: widget.theme,
+      ),
+    );
   }
 
   @override
@@ -119,11 +125,6 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
             ),
           ),
         ),
-        if (stopwatch.laps.isNotEmpty && _showHistory)
-          Expanded(
-            flex: 1,
-            child: _buildLapsList(stopwatch.laps),
-          ),
       ],
     );
   }
@@ -152,11 +153,6 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
             ),
           ),
         ),
-        if (stopwatch.laps.isNotEmpty && _showHistory)
-          Expanded(
-            flex: 1,
-            child: _buildLapsList(stopwatch.laps),
-          ),
       ],
     );
   }
@@ -323,13 +319,12 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
 
         SizedBox(width: iconSize * 1.5),
 
-        // History icon (only visible when there are laps)
-        if (hasLaps)
-          _buildIconButton(
-            icon: _showHistory ? Icons.history_toggle_off : Icons.history,
-            size: iconSize,
-            onTap: _toggleHistory,
-          ),
+        // History icon (always visible, disabled when no laps)
+        _buildIconButton(
+          icon: Icons.history,
+          size: iconSize,
+          onTap: hasLaps ? () => _showLapHistory(stopwatch.laps) : null,
+        ),
       ],
     );
   }
@@ -364,64 +359,4 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
     );
   }
 
-  Widget _buildLapsList(List<Lap> laps) {
-    // Reverse to show latest lap first
-    final reversedLaps = laps.reversed.toList();
-
-    return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: widget.theme.glowColor.withOpacity(0.3),
-            width: 1,
-          ),
-        ),
-      ),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: reversedLaps.length,
-        itemBuilder: (context, index) {
-          final lap = reversedLaps[index];
-          return _buildLapItem(lap);
-        },
-      ),
-    );
-  }
-
-  Widget _buildLapItem(Lap lap) {
-    final lapMinutes = (lap.lapSeconds / 60).floor();
-    final lapSeconds = lap.lapSeconds % 60;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Lap ${lap.lapNumber}',
-            style: TextStyle(
-              color: widget.theme.textColor.withOpacity(0.8),
-              fontSize: 14,
-              fontFamily: 'Orbitron',
-            ),
-          ),
-          Text(
-            '${lapMinutes.toString().padLeft(2, '0')}:${lapSeconds.toString().padLeft(2, '0')}',
-            style: TextStyle(
-              color: widget.theme.glowColor,
-              fontSize: 16,
-              fontFamily: 'Orbitron',
-              fontWeight: FontWeight.bold,
-              shadows: [
-                Shadow(
-                  color: widget.theme.glowColor.withOpacity(0.5),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

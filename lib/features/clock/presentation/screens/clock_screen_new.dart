@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/burnin_protection_service.dart';
 import '../../../../core/services/charging_service.dart';
 import '../../../../core/services/audio_service.dart';
+import '../../../../core/services/settings_service.dart';
 import 'clock_settings_screen.dart';
 
 /// Minimalist clock screen with vertical/horizontal layout
@@ -27,6 +29,7 @@ class _ClockScreenState extends State<ClockScreen> {
   final BurninProtectionService _burninProtection = BurninProtectionService();
   final ChargingService _chargingService = ChargingService();
   final AudioService _audioService = AudioService();
+  final SettingsService _settingsService = SettingsService();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
   double _offsetX = 0.0;
@@ -38,19 +41,31 @@ class _ClockScreenState extends State<ClockScreen> {
   int _batteryLevel = 100;
 
   // Settings
-  bool _showDate = false;
-  bool _showWeekday = false;
-  bool _showBattery = false;
-  bool _secondFlipSound = false;
+  late bool _showDate;
+  late bool _showWeekday;
+  late bool _showBattery;
+  late bool _secondFlipSound;
 
   @override
   void initState() {
     super.initState();
     _audioService.initialize();
     _lastSecond = DateTime.now().second;
+    
+    // Load settings from SettingsService
+    _loadSettings();
     _startTimer();
     _startBurninProtection();
     _initializeCharging();
+  }
+
+  void _loadSettings() {
+    setState(() {
+      _showDate = _settingsService.getShowDate();
+      _showWeekday = _settingsService.getShowWeekday();
+      _showBattery = _settingsService.getShowBattery();
+      _secondFlipSound = _settingsService.getSecondFlipSound();
+    });
   }
 
   Future<void> _initializeCharging() async {
@@ -133,17 +148,14 @@ class _ClockScreenState extends State<ClockScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => ClockSettingsScreen(
         currentTheme: widget.theme,
-        showDate: _showDate,
-        showWeekday: _showWeekday,
-        showBattery: _showBattery,
-        secondFlipSound: _secondFlipSound,
-        onDateToggle: (value) => setState(() => _showDate = value),
-        onWeekdayToggle: (value) => setState(() => _showWeekday = value),
-        onBatteryToggle: (value) => setState(() => _showBattery = value),
-        onSecondFlipSoundToggle: (value) => setState(() => _secondFlipSound = value),
         onThemeChanged: widget.onThemeChanged,
+        audioService: _audioService,
+        onSettingsChanged: _loadSettings, // Reload settings immediately when changed
       ),
-    );
+    ).then((_) {
+      // Also reload when modal is closed (in case of any missed updates)
+      _loadSettings();
+    });
   }
 
   @override
@@ -204,6 +216,7 @@ class _ClockScreenState extends State<ClockScreen> {
 
   Widget _buildVerticalTime(double fontSize) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(_currentTime.hour.toString().padLeft(2, '0'), fontSize),
@@ -217,6 +230,7 @@ class _ClockScreenState extends State<ClockScreen> {
 
   Widget _buildHorizontalTime(double fontSize) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildTimeDigit(_currentTime.hour.toString().padLeft(2, '0'), fontSize),
@@ -284,13 +298,14 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildDateDisplay({double fontSize = 14.0}) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final month = months[_currentTime.month - 1];
-    final day = _currentTime.day;
-    final year = _currentTime.year;
+    // Use intl package for localized date formatting
+    // Format: "MMM d, yyyy" (e.g., "Jan 1, 2024" in English, "1月 1, 2024" in Chinese)
+    final locale = Localizations.localeOf(context).toString();
+    final dateFormat = DateFormat.yMMMd(locale);
+    final formattedDate = dateFormat.format(_currentTime);
 
     return Text(
-      '$month $day, $year',
+      formattedDate,
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: fontSize,
@@ -302,11 +317,14 @@ class _ClockScreenState extends State<ClockScreen> {
   }
 
   Widget _buildWeekdayDisplay({double fontSize = 14.0}) {
-    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final weekday = weekdays[_currentTime.weekday - 1];
+    // Use intl package for localized weekday formatting
+    // Format: "EEE" (e.g., "Mon" in English, "周一" in Chinese)
+    final locale = Localizations.localeOf(context).toString();
+    final weekdayFormat = DateFormat.E(locale);
+    final formattedWeekday = weekdayFormat.format(_currentTime);
 
     return Text(
-      weekday,
+      formattedWeekday,
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: fontSize,

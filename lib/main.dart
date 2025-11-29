@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'l10n/app_localizations.dart';
 import 'core/themes/glow_theme.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/audio_service.dart';
+import 'core/services/settings_service.dart';
 import 'features/clock/presentation/screens/clock_screen_new.dart';
 import 'features/pomodoro/presentation/screens/pomodoro_screen_new.dart';
 import 'features/stopwatch/presentation/screens/stopwatch_screen.dart';
@@ -20,6 +23,9 @@ Future<void> main() async {
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: await getApplicationDocumentsDirectory(),
   );
+
+  // Initialize settings service
+  await SettingsService().initialize();
 
   // Initialize notification service
   await NotificationService().initialize();
@@ -61,6 +67,21 @@ class NeonFocusApp extends StatelessWidget {
     return MaterialApp(
       title: 'NeonFocus',
       debugShowCheckedModeBanner: false,
+      
+      // Internationalization support
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // English
+        Locale('zh', ''), // Chinese
+        Locale('ja', ''), // Japanese
+        Locale('ko', ''), // Korean
+      ],
+      
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: NeonTheme.cyberBlue.backgroundColor,
         primaryColor: NeonTheme.cyberBlue.primaryColor,
@@ -81,13 +102,27 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final PageController _pageController = PageController();
   final AudioService _audioService = AudioService();
-  NeonTheme _currentTheme = NeonTheme.cyberBlue;
+  final SettingsService _settingsService = SettingsService();
+  late NeonTheme _currentTheme;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _loadSettings();
     _audioService.initialize();
+  }
+
+  void _loadSettings() {
+    // Load saved theme
+    final savedThemeId = _settingsService.getCurrentTheme();
+    _currentTheme = NeonTheme.getThemeById(savedThemeId) ?? NeonTheme.cyberBlue;
+    
+    // Load saved volumes
+    final effectVolume = _settingsService.getEffectVolume();
+    final ambienceVolume = _settingsService.getAmbienceVolume();
+    _audioService.setEffectVolume(effectVolume);
+    _audioService.setAmbienceVolume(ambienceVolume);
   }
 
   @override
@@ -100,6 +135,8 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _currentTheme = newTheme;
     });
+    // Save theme preference
+    _settingsService.setCurrentTheme(newTheme.id);
   }
 
   void _onPageChanged(int page) {
