@@ -168,4 +168,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get iceBlue => '冰蓝';
+
+  @override
+  String get nixieTube => '电子管';
+
+  @override
+  String get digitalWatch => '电子表';
 }

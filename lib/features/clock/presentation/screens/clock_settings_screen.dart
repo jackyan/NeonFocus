@@ -58,7 +58,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
     return Container(
       height: screenHeight * 0.5, // Half screen
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E27),
+        color: _selectedTheme.backgroundColor,
         borderRadius: BorderRadius.circular(20), // All corners rounded
         border: Border.all(
           color: _selectedTheme.glowColor.withOpacity(0.3),

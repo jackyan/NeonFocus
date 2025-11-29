@@ -168,4 +168,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get iceBlue => '아이스 블루';
+
+  @override
+  String get nixieTube => '닉시 튜브';
+
+  @override
+  String get digitalWatch => '디지털 워치';
 }

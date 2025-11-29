@@ -168,4 +168,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iceBlue => 'Ice Blue';
+
+  @override
+  String get nixieTube => 'Nixie Tube';
+
+  @override
+  String get digitalWatch => 'Digital Watch';
 }

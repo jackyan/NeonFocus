@@ -20,9 +20,9 @@ class LapHistoryScreen extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
-      height: screenHeight * 0.33, // 1/3 of screen height
+      height: screenHeight * 0.5, // Half screen (consistent with settings pages)
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0E27),
+        color: theme.backgroundColor,
         borderRadius: const BorderRadius.all(Radius.circular(20)), // All corners rounded
         border: Border.all(
           color: theme.glowColor.withOpacity(0.3),

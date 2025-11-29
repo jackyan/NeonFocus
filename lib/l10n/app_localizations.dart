@@ -419,6 +419,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ice Blue'**
   String get iceBlue;
+
+  /// No description provided for @nixieTube.
+  ///
+  /// In en, this message translates to:
+  /// **'Nixie Tube'**
+  String get nixieTube;
+
+  /// No description provided for @digitalWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Digital Watch'**
+  String get digitalWatch;
 }
 
 class _AppLocalizationsDelegate

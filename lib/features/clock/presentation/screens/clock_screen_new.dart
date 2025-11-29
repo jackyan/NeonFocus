@@ -8,6 +8,10 @@ import '../../../../core/services/burnin_protection_service.dart';
 import '../../../../core/services/charging_service.dart';
 import '../../../../core/services/audio_service.dart';
 import '../../../../core/services/settings_service.dart';
+import '../../../../shared/widgets/display/flip_clock_digit.dart';
+import '../../../../shared/widgets/display/seven_segment_digit.dart';
+import '../../../../shared/widgets/display/animated_flip_clock_digit.dart';
+import '../../../../shared/widgets/display/animated_seven_segment_digit.dart';
 import 'clock_settings_screen.dart';
 
 /// Minimalist clock screen with vertical/horizontal layout
@@ -244,57 +248,97 @@ class _ClockScreenState extends State<ClockScreen> {
 
   Widget _buildTimeDigit(String text, double fontSize) {
     // Split the two-digit text into individual characters
-    // Each character gets its own fixed-width container
-    // Add consistent spacing between digits for better visual balance
     final chars = text.split('');
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(
-          width: fontSize * 0.72, // Fixed width per single digit
-          child: Text(
-            chars[0],
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontFamily: 'Orbitron',
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              decoration: TextDecoration.none,
-              fontFeatures: const [FontFeature.tabularFigures()],
-              shadows: [
-                Shadow(
-                  color: widget.theme.glowColor.withOpacity(0.9),
-                  blurRadius: 20,
-                ),
-              ],
+    
+    // Check display style and render accordingly
+    switch (widget.theme.displayStyle) {
+      case DisplayStyle.flipClock:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedFlipClockDigit(
+              digit: chars[0],
+              size: fontSize,
+              theme: widget.theme,
             ),
-          ),
-        ),
-        SizedBox(width: fontSize * 0.08), // Increased spacing to prevent digit contact (especially "4")
-        SizedBox(
-          width: fontSize * 0.72, // Fixed width per single digit
-          child: Text(
-            chars[1],
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontFamily: 'Orbitron',
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              decoration: TextDecoration.none,
-              fontFeatures: const [FontFeature.tabularFigures()],
-              shadows: [
-                Shadow(
-                  color: widget.theme.glowColor.withOpacity(0.9),
-                  blurRadius: 20,
-                ),
-              ],
+            SizedBox(width: fontSize * 0.12),  // Increased spacing for larger cards
+            AnimatedFlipClockDigit(
+              digit: chars[1],
+              size: fontSize,
+              theme: widget.theme,
             ),
-          ),
-        ),
-      ],
-    );
+          ],
+        );
+      
+      case DisplayStyle.sevenSegment:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSevenSegmentDigit(
+              digit: int.parse(chars[0]),
+              size: fontSize,
+              theme: widget.theme,
+            ),
+            SizedBox(width: fontSize * 0.08),  // Match standard spacing
+            AnimatedSevenSegmentDigit(
+              digit: int.parse(chars[1]),
+              size: fontSize,
+              theme: widget.theme,
+            ),
+          ],
+        );
+      
+      default:
+        // Standard display style (Orbitron font)
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: fontSize * 0.72, // Fixed width per single digit
+              child: Text(
+                chars[0],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontFamily: 'Orbitron',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  shadows: [
+                    Shadow(
+                      color: widget.theme.glowColor.withOpacity(0.9),
+                      blurRadius: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: fontSize * 0.08), // Increased spacing to prevent digit contact
+            SizedBox(
+              width: fontSize * 0.72, // Fixed width per single digit
+              child: Text(
+                chars[1],
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontFamily: 'Orbitron',
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  shadows: [
+                    Shadow(
+                      color: widget.theme.glowColor.withOpacity(0.9),
+                      blurRadius: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+    }
   }
 
   Widget _buildDateDisplay({double fontSize = 14.0}) {
