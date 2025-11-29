@@ -80,7 +80,11 @@ class ChargingService {
         _notifyBatteryLevelListeners(level);
       }
     } catch (e) {
-      print('Error updating battery level: $e');
+      // Silently fail on simulators/emulators where battery API is unavailable
+      // Only log once to avoid spam
+      if (_batteryLevel == 100) {
+        print('Battery info unavailable (running on simulator/emulator)');
+      }
     }
   }
 

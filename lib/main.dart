@@ -5,6 +5,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'core/themes/glow_theme.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/audio_service.dart';
 import 'features/clock/presentation/screens/clock_screen_new.dart';
 import 'features/pomodoro/presentation/screens/pomodoro_screen_new.dart';
 import 'features/stopwatch/presentation/screens/stopwatch_screen.dart';
@@ -79,7 +80,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final PageController _pageController = PageController();
+  final AudioService _audioService = AudioService();
   NeonTheme _currentTheme = NeonTheme.cyberBlue;
+
+  @override
+  void initState() {
+    super.initState();
+    _audioService.initialize();
+  }
 
   @override
   void dispose() {
@@ -93,6 +101,11 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  void _onPageChanged(int page) {
+    _audioService.playEffect(AudioEffect.uiSwipe);
+    HapticFeedback.lightImpact();
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -101,6 +114,7 @@ class _MainScreenState extends State<MainScreen> {
       color: _currentTheme.backgroundColor,
       child: PageView(
         controller: _pageController,
+        onPageChanged: _onPageChanged,
         children: [
           // Clock screen
           ClockScreen(
