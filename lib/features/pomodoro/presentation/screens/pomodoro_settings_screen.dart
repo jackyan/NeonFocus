@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/themes/glow_theme.dart';
+import '../../../../core/services/audio_service.dart';
 
 /// Pomodoro settings bottom sheet (covers half screen) - with state management
 class PomodoroSettingsScreen extends StatefulWidget {
@@ -11,6 +12,9 @@ class PomodoroSettingsScreen extends StatefulWidget {
   final Function(bool) onVibrationToggle;
   final Function(bool) onGravityToggle;
   final Function(NeonTheme) onThemeChanged;
+  final AudioService audioService;
+  final Ambience currentAmbience;
+  final Function(Ambience) onAmbienceChanged;
 
   const PomodoroSettingsScreen({
     Key? key,
@@ -22,6 +26,9 @@ class PomodoroSettingsScreen extends StatefulWidget {
     required this.onVibrationToggle,
     required this.onGravityToggle,
     required this.onThemeChanged,
+    required this.audioService,
+    required this.currentAmbience,
+    required this.onAmbienceChanged,
   }) : super(key: key);
 
   @override
@@ -33,6 +40,9 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
   late bool _vibration;
   late bool _gravityEnabled;
   late NeonTheme _selectedTheme;
+  late double _effectVolume;
+  late double _ambienceVolume;
+  late Ambience _selectedAmbience;
 
   @override
   void initState() {
@@ -41,6 +51,9 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
     _vibration = widget.vibration;
     _gravityEnabled = widget.gravityEnabled;
     _selectedTheme = widget.currentTheme;
+    _effectVolume = widget.audioService.effectVolume;
+    _ambienceVolume = widget.audioService.ambienceVolume;
+    _selectedAmbience = widget.currentAmbience;
   }
 
   @override
@@ -120,6 +133,39 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
                     _selectedTheme,
                     subtitle: 'Flip phone to start/pause',
                   ),
+
+                  const SizedBox(height: 30),
+
+                  // Sound Effects Section
+                  _buildSectionTitle('SOUND EFFECTS', _selectedTheme),
+                  const SizedBox(height: 15),
+                  _buildVolumeSlider(
+                    'Effect Volume',
+                    _effectVolume,
+                    (value) {
+                      setState(() => _effectVolume = value);
+                      widget.audioService.setEffectVolume(value);
+                    },
+                    _selectedTheme,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Ambient Sound Section
+                  _buildSectionTitle('AMBIENT SOUND', _selectedTheme),
+                  const SizedBox(height: 15),
+                  _buildAmbienceSelector(),
+                  const SizedBox(height: 15),
+                  if (_selectedAmbience != Ambience.none)
+                    _buildVolumeSlider(
+                      'Ambience Volume',
+                      _ambienceVolume,
+                      (value) {
+                        setState(() => _ambienceVolume = value);
+                        widget.audioService.setAmbienceVolume(value);
+                      },
+                      _selectedTheme,
+                    ),
 
                   const SizedBox(height: 30),
 
@@ -317,5 +363,152 @@ class _PomodoroSettingsScreenState extends State<PomodoroSettingsScreen> {
         },
       ),
     );
+  }
+
+  Widget _buildVolumeSlider(
+    String label,
+    double value,
+    Function(double) onChanged,
+    NeonTheme theme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.white,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: theme.glowColor,
+            inactiveTrackColor: theme.glowColor.withOpacity(0.3),
+            thumbColor: theme.glowColor,
+            overlayColor: theme.glowColor.withOpacity(0.2),
+            trackHeight: 3,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+          ),
+          child: Slider(
+            value: value,
+            min: 0.0,
+            max: 1.0,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmbienceSelector() {
+    return SizedBox(
+      height: 80,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: Ambience.values.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final ambience = Ambience.values[index];
+          final isSelected = ambience == _selectedAmbience;
+          final isPremium = ambience.isPremium;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() => _selectedAmbience = ambience);
+              widget.onAmbienceChanged(ambience);
+              if (ambience != Ambience.none) {
+                widget.audioService.startAmbience(ambience);
+              } else {
+                widget.audioService.stopAmbience();
+              }
+            },
+            child: Container(
+              width: 90,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: _selectedTheme.backgroundColor,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected
+                      ? _selectedTheme.glowColor
+                      : _selectedTheme.glowColor.withOpacity(0.3),
+                  width: isSelected ? 3 : 1,
+                ),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: _selectedTheme.glowColor.withOpacity(0.5),
+                          blurRadius: 12,
+                          spreadRadius: 2,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    _getAmbienceIcon(ambience),
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    ambience.nameEn,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (isPremium)
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'PRO',
+                        style: TextStyle(
+                          fontSize: 8,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  IconData _getAmbienceIcon(Ambience ambience) {
+    switch (ambience) {
+      case Ambience.none:
+        return Icons.volume_off_outlined;
+      case Ambience.rain:
+        return Icons.water_drop_outlined;
+      case Ambience.cafe:
+        return Icons.local_cafe_outlined;
+      case Ambience.whiteNoise:
+        return Icons.graphic_eq_outlined;
+      case Ambience.forest:
+        return Icons.park_outlined;
+      case Ambience.ocean:
+        return Icons.waves_outlined;
+      case Ambience.lofi:
+        return Icons.music_note_outlined;
+    }
   }
 }
