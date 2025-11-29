@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/themes/glow_theme.dart';
 import '../../../../core/services/burnin_protection_service.dart';
 import '../../../../core/services/charging_service.dart';
+import '../../../../core/services/audio_service.dart';
 import 'clock_settings_screen.dart';
 
 /// Minimalist clock screen with vertical/horizontal layout
@@ -25,10 +26,12 @@ class ClockScreen extends StatefulWidget {
 class _ClockScreenState extends State<ClockScreen> {
   final BurninProtectionService _burninProtection = BurninProtectionService();
   final ChargingService _chargingService = ChargingService();
+  final AudioService _audioService = AudioService();
   DateTime _currentTime = DateTime.now();
   Timer? _timer;
   double _offsetX = 0.0;
   double _offsetY = 0.0;
+  int _lastSecond = -1;
 
   // Charging state
   bool _isCharging = false;
@@ -38,10 +41,13 @@ class _ClockScreenState extends State<ClockScreen> {
   bool _showDate = false;
   bool _showWeekday = false;
   bool _showBattery = false;
+  bool _secondFlipSound = false;
 
   @override
   void initState() {
     super.initState();
+    _audioService.initialize();
+    _lastSecond = DateTime.now().second;
     _startTimer();
     _startBurninProtection();
     _initializeCharging();
@@ -94,8 +100,17 @@ class _ClockScreenState extends State<ClockScreen> {
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
+        final newTime = DateTime.now();
+        final newSecond = newTime.second;
+
+        // Play flip sound when second changes (if enabled)
+        if (_secondFlipSound && newSecond != _lastSecond) {
+          _audioService.playEffect(AudioEffect.digitFlip);
+        }
+
         setState(() {
-          _currentTime = DateTime.now();
+          _currentTime = newTime;
+          _lastSecond = newSecond;
         });
       }
     });
@@ -121,9 +136,11 @@ class _ClockScreenState extends State<ClockScreen> {
         showDate: _showDate,
         showWeekday: _showWeekday,
         showBattery: _showBattery,
+        secondFlipSound: _secondFlipSound,
         onDateToggle: (value) => setState(() => _showDate = value),
         onWeekdayToggle: (value) => setState(() => _showWeekday = value),
         onBatteryToggle: (value) => setState(() => _showBattery = value),
+        onSecondFlipSoundToggle: (value) => setState(() => _secondFlipSound = value),
         onThemeChanged: widget.onThemeChanged,
       ),
     );

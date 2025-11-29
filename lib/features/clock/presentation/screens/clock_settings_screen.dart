@@ -7,9 +7,11 @@ class ClockSettingsScreen extends StatefulWidget {
   final bool showDate;
   final bool showWeekday;
   final bool showBattery;
+  final bool secondFlipSound;
   final Function(bool) onDateToggle;
   final Function(bool) onWeekdayToggle;
   final Function(bool) onBatteryToggle;
+  final Function(bool) onSecondFlipSoundToggle;
   final Function(NeonTheme) onThemeChanged;
 
   const ClockSettingsScreen({
@@ -18,9 +20,11 @@ class ClockSettingsScreen extends StatefulWidget {
     required this.showDate,
     required this.showWeekday,
     required this.showBattery,
+    required this.secondFlipSound,
     required this.onDateToggle,
     required this.onWeekdayToggle,
     required this.onBatteryToggle,
+    required this.onSecondFlipSoundToggle,
     required this.onThemeChanged,
   }) : super(key: key);
 
@@ -32,6 +36,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
   late bool _showDate;
   late bool _showWeekday;
   late bool _showBattery;
+  late bool _secondFlipSound;
   late NeonTheme _selectedTheme;
 
   @override
@@ -40,6 +45,7 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
     _showDate = widget.showDate;
     _showWeekday = widget.showWeekday;
     _showBattery = widget.showBattery;
+    _secondFlipSound = widget.secondFlipSound;
     _selectedTheme = widget.currentTheme;
   }
 
@@ -116,6 +122,21 @@ class _ClockSettingsScreenState extends State<ClockSettingsScreen> {
                     (value) {
                       setState(() => _showBattery = value);
                       widget.onBatteryToggle(value);
+                    },
+                    _selectedTheme,
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Sound Section
+                  _buildSectionTitle('SOUND', _selectedTheme),
+                  const SizedBox(height: 15),
+                  _buildToggleItem(
+                    'Second Flip Sound',
+                    _secondFlipSound,
+                    (value) {
+                      setState(() => _secondFlipSound = value);
+                      widget.onSecondFlipSoundToggle(value);
                     },
                     _selectedTheme,
                   ),

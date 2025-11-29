@@ -42,10 +42,15 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
   bool _isShowingCountdown = false;
   Ambience _currentAmbience = Ambience.none;
 
+  // Track previous status to play sounds only on state transitions
+  String _previousStatus = 'idle';
+
   @override
   void initState() {
     super.initState();
     _audioService.initialize();
+    // Restore ambience state from AudioService
+    _currentAmbience = _audioService.currentAmbienceEnum;
     _initializeGravity();
     _startBurninProtection();
   }
@@ -239,16 +244,25 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
       create: (context) => PomodoroBloc(),
       child: BlocListener<PomodoroBloc, PomodoroState>(
         listener: (context, state) {
-          final status = state.pomodoro.status;
-          if (status.toString().contains('running')) {
-            _audioService.playEffect(AudioEffect.timerStart);
-          } else if (status.toString().contains('paused')) {
-            _audioService.playEffect(AudioEffect.uiClick);
-          } else if (status.toString().contains('completed')) {
-            _audioService.playEffect(AudioEffect.timerComplete);
-            if (_vibration) {
-              HapticFeedback.heavyImpact();
+          final currentStatus = state.pomodoro.status.toString();
+
+          // Only play sounds when status changes
+          if (currentStatus != _previousStatus) {
+            if (currentStatus.contains('running') && !_previousStatus.contains('running')) {
+              // Transitioning to running state - play start sound once
+              _audioService.playEffect(AudioEffect.timerStart);
+            } else if (currentStatus.contains('paused') && !_previousStatus.contains('paused')) {
+              // Transitioning to paused state
+              _audioService.playEffect(AudioEffect.uiClick);
+            } else if (currentStatus.contains('completed')) {
+              // Completed state
+              _audioService.playEffect(AudioEffect.timerComplete);
+              if (_vibration) {
+                HapticFeedback.heavyImpact();
+              }
             }
+
+            _previousStatus = currentStatus;
           }
         },
         child: BlocBuilder<PomodoroBloc, PomodoroState>(
@@ -384,6 +398,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
           size: iconSize,
           onTap: () {
             context.read<PomodoroBloc>().add(const ResetPomodoro());
+            _audioService.playEffect(AudioEffect.uiClick);
             HapticFeedback.mediumImpact();
           },
         ),

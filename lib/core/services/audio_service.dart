@@ -55,6 +55,15 @@ class AudioService {
   double get ambienceVolume => _ambienceVolume;
   bool get isAmbiencePlaying => _ambiencePlayer.state == PlayerState.playing;
 
+  /// Get current ambience as enum
+  Ambience get currentAmbienceEnum {
+    if (_currentAmbience == null) return Ambience.none;
+    return Ambience.values.firstWhere(
+      (a) => a.id == _currentAmbience,
+      orElse: () => Ambience.none,
+    );
+  }
+
   /// Initialize audio service
   Future<void> initialize() async {
     if (_isInitialized) return;

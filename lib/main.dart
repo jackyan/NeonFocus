@@ -82,6 +82,7 @@ class _MainScreenState extends State<MainScreen> {
   final PageController _pageController = PageController();
   final AudioService _audioService = AudioService();
   NeonTheme _currentTheme = NeonTheme.cyberBlue;
+  int _currentPage = 0;
 
   @override
   void initState() {
@@ -104,6 +105,13 @@ class _MainScreenState extends State<MainScreen> {
   void _onPageChanged(int page) {
     _audioService.playEffect(AudioEffect.uiSwipe);
     HapticFeedback.lightImpact();
+
+    // Stop ambience when leaving pomodoro page (index 1)
+    if (_currentPage == 1 && page != 1) {
+      _audioService.stopAmbience();
+    }
+
+    _currentPage = page;
   }
 
   @override
