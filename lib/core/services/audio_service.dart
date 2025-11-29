@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 
 /// Audio effect types
 enum AudioEffect {
@@ -77,9 +78,8 @@ class AudioService {
       await _ambiencePlayer.setVolume(_ambienceVolume);
 
       _isInitialized = true;
-      print('AudioService initialized successfully');
     } catch (e) {
-      print('Error initializing AudioService: $e');
+      debugPrint('Error initializing AudioService: $e');
     }
   }
 
@@ -98,7 +98,7 @@ class AudioService {
         AssetSource('sounds/effects/${effect.filename}'),
       );
     } catch (e) {
-      print('Error playing effect ${effect.filename}: $e');
+      debugPrint('Error playing effect ${effect.filename}: $e');
       // Fail silently - app should continue working without sound
     }
   }
@@ -124,10 +124,8 @@ class AudioService {
       await _ambiencePlayer.play(
         AssetSource('sounds/ambience/${ambience.id}.mp3'),
       );
-
-      print('Started ambience: ${ambience.nameEn}');
     } catch (e) {
-      print('Error playing ambience ${ambience.id}: $e');
+      debugPrint('Error playing ambience ${ambience.id}: $e');
       _currentAmbience = null;
     }
   }
@@ -137,9 +135,8 @@ class AudioService {
     try {
       await _ambiencePlayer.stop();
       _currentAmbience = null;
-      print('Stopped ambience');
     } catch (e) {
-      print('Error stopping ambience: $e');
+      debugPrint('Error stopping ambience: $e');
     }
   }
 
@@ -147,9 +144,8 @@ class AudioService {
   Future<void> pauseAmbience() async {
     try {
       await _ambiencePlayer.pause();
-      print('Paused ambience');
     } catch (e) {
-      print('Error pausing ambience: $e');
+      debugPrint('Error pausing ambience: $e');
     }
   }
 
@@ -157,9 +153,8 @@ class AudioService {
   Future<void> resumeAmbience() async {
     try {
       await _ambiencePlayer.resume();
-      print('Resumed ambience');
     } catch (e) {
-      print('Error resuming ambience: $e');
+      debugPrint('Error resuming ambience: $e');
     }
   }
 

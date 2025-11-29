@@ -14,6 +14,8 @@ class ChargingService {
   StreamSubscription<BatteryState>? _batteryStateSubscription;
   bool _isCharging = false;
   int _batteryLevel = 100;
+  bool _isSimulator = false;
+  bool _hasLoggedSimulatorWarning = false;
 
   // Callbacks
   final List<Function(bool isCharging)> _chargingListeners = [];
@@ -37,7 +39,13 @@ class ChargingService {
     try {
       _batteryLevel = await _battery.batteryLevel;
     } catch (e) {
-      print('Error getting battery level: $e');
+      // On simulator/emulator, battery API is not available
+      // Use default value and continue normally
+      _isSimulator = true;
+      if (!_hasLoggedSimulatorWarning) {
+        debugPrint('ℹ️ Running on simulator/emulator - using default battery values (100%)');
+        _hasLoggedSimulatorWarning = true;
+      }
       _batteryLevel = 100; // Default to full
     }
 
@@ -46,33 +54,43 @@ class ChargingService {
       final state = await _battery.batteryState;
       _isCharging = state == BatteryState.charging || state == BatteryState.full;
     } catch (e) {
-      print('Error getting battery state: $e');
+      // On simulator/emulator, battery state is not available
+      // Use default value and continue normally
       _isCharging = false;
     }
 
-    // Listen to battery state changes
-    _batteryStateSubscription = _battery.onBatteryStateChanged.listen((state) {
-      final wasCharging = _isCharging;
-      _isCharging = state == BatteryState.charging || state == BatteryState.full;
+    // Listen to battery state changes (only on real devices)
+    if (!_isSimulator) {
+      _batteryStateSubscription = _battery.onBatteryStateChanged.listen((state) {
+        final wasCharging = _isCharging;
+        _isCharging = state == BatteryState.charging || state == BatteryState.full;
 
-      if (wasCharging != _isCharging) {
-        _notifyChargingListeners(_isCharging);
-      }
+        if (wasCharging != _isCharging) {
+          _notifyChargingListeners(_isCharging);
+        }
 
-      // Update battery level when state changes
-      _updateBatteryLevel();
-    });
+        // Update battery level when state changes
+        _updateBatteryLevel();
+      }, onError: (error) {
+        // Handle stream errors gracefully (common on simulators)
+        if (!_hasLoggedSimulatorWarning) {
+          debugPrint('ℹ️ Battery monitoring unavailable on simulator/emulator');
+          _hasLoggedSimulatorWarning = true;
+        }
+      });
 
-    // Periodic battery level updates
-    Timer.periodic(const Duration(minutes: 1), (_) {
-      _updateBatteryLevel();
-    });
-
-    print('Charging service initialized - Charging: $_isCharging, Level: $_batteryLevel%');
+      // Periodic battery level updates (only on real devices)
+      Timer.periodic(const Duration(minutes: 1), (_) {
+        _updateBatteryLevel();
+      });
+    }
   }
 
   /// Update battery level
   Future<void> _updateBatteryLevel() async {
+    // Skip updates on simulator
+    if (_isSimulator) return;
+
     try {
       final level = await _battery.batteryLevel;
       if (level != _batteryLevel) {
@@ -81,10 +99,8 @@ class ChargingService {
       }
     } catch (e) {
       // Silently fail on simulators/emulators where battery API is unavailable
-      // Only log once to avoid spam
-      if (_batteryLevel == 100) {
-        print('Battery info unavailable (running on simulator/emulator)');
-      }
+      // This is expected behavior on iOS Simulator and Android Emulator
+      // The app will use default values (100%) and continue working normally
     }
   }
 

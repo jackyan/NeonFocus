@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/services/audio_service.dart';
-import '../../../../core/themes/glow_theme.dart';
 
 /// Ambience selector widget with cyberpunk aesthetic
 class AmbienceSelector extends StatefulWidget {

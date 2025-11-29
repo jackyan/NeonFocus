@@ -8,6 +8,7 @@ import '../../domain/stopwatch_model.dart';
 import '../bloc/stopwatch_bloc.dart';
 import '../bloc/stopwatch_event.dart';
 import '../bloc/stopwatch_state.dart';
+import 'stopwatch_settings_screen.dart';
 
 /// Minimalist stopwatch screen
 class StopwatchScreen extends StatefulWidget {
@@ -26,11 +27,33 @@ class StopwatchScreen extends StatefulWidget {
 
 class _StopwatchScreenState extends State<StopwatchScreen> {
   final AudioService _audioService = AudioService();
+  bool _showHistory = false;
 
   @override
   void initState() {
     super.initState();
     _audioService.initialize();
+  }
+
+  void _showSettings(BuildContext blocContext) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StopwatchSettingsScreen(
+        currentTheme: widget.theme,
+        onThemeChanged: widget.onThemeChanged,
+        audioService: _audioService,
+      ),
+    );
+  }
+
+  void _toggleHistory() {
+    setState(() {
+      _showHistory = !_showHistory;
+    });
+    HapticFeedback.lightImpact();
   }
 
   @override
@@ -96,7 +119,7 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
             ),
           ),
         ),
-        if (stopwatch.laps.isNotEmpty)
+        if (stopwatch.laps.isNotEmpty && _showHistory)
           Expanded(
             flex: 1,
             child: _buildLapsList(stopwatch.laps),
@@ -129,7 +152,7 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
             ),
           ),
         ),
-        if (stopwatch.laps.isNotEmpty)
+        if (stopwatch.laps.isNotEmpty && _showHistory)
           Expanded(
             flex: 1,
             child: _buildLapsList(stopwatch.laps),
@@ -241,10 +264,21 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
   Widget _buildControlIcons(BuildContext context, StopwatchStatus status, double iconSize) {
     final isRunning = status == StopwatchStatus.running;
     final isIdle = status == StopwatchStatus.idle;
+    final stopwatch = context.read<StopwatchBloc>().state.stopwatch;
+    final hasLaps = stopwatch.laps.isNotEmpty;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // Settings icon
+        _buildIconButton(
+          icon: Icons.settings_outlined,
+          size: iconSize,
+          onTap: () => _showSettings(context),
+        ),
+
+        SizedBox(width: iconSize * 1.5),
+
         // Reset icon
         _buildIconButton(
           icon: Icons.stop_outlined,
@@ -286,6 +320,16 @@ class _StopwatchScreenState extends State<StopwatchScreen> {
                 }
               : null,
         ),
+
+        SizedBox(width: iconSize * 1.5),
+
+        // History icon (only visible when there are laps)
+        if (hasLaps)
+          _buildIconButton(
+            icon: _showHistory ? Icons.history_toggle_off : Icons.history,
+            size: iconSize,
+            onTap: _toggleHistory,
+          ),
       ],
     );
   }
