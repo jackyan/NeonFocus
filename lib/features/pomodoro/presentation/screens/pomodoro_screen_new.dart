@@ -238,6 +238,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> {
           final status = state.pomodoro.status;
           if (status.toString().contains('running')) {
             _audioService.playEffect(AudioEffect.timerStart);
+          } else if (status.toString().contains('paused')) {
+            _audioService.playEffect(AudioEffect.uiClick);
           } else if (status.toString().contains('completed')) {
             _audioService.playEffect(AudioEffect.timerComplete);
             if (_vibration) {

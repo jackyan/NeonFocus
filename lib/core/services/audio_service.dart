@@ -79,6 +79,11 @@ class AudioService {
     if (!_isInitialized) await initialize();
 
     try {
+      // Stop any currently playing effect first
+      await _effectPlayer.stop();
+
+      // Set to play once only (not loop)
+      await _effectPlayer.setReleaseMode(ReleaseMode.stop);
       await _effectPlayer.setVolume(_effectVolume);
       await _effectPlayer.play(
         AssetSource('sounds/effects/${effect.filename}'),
